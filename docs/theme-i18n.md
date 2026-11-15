@@ -17,7 +17,7 @@ python3 plugin/boardstudio/bin/integrate-frontend.py --frontend ../saiadmin-artd
 
 脚本完成两项修改：
 
-1. 在宿主 `src/main.ts` 导入插件的 `i18n/host`，使首次加载菜单时已有翻译。
+1. 在宿主 `src/main.ts` 通过可选 eager glob 加载插件的 `i18n/host`，使首次加载菜单时已有翻译。
 2. 宿主 6.1.5 的 `changeLanguage` 在修改 locale 后会 `reload(50)` 重建页面。脚本仅让 `/boardstudio/` 路由跳过该重建，保留 locale 更新、语言持久化及其他宿主页面的原行为，避免插件未保存输入被清空。
 
 原文件备份为 `*.boardstudio.bak`。脚本幂等，不识别的宿主结构拒绝修改；此时按 diff 人工适配，不应绕过检查或替换整个宿主文件。完成后重新构建管理端。插件页面可自行注册翻译，但导航初次加载及无损语言切换需要上述显式接入。
@@ -32,7 +32,7 @@ python3 plugin/boardstudio/bin/integrate-frontend.py --frontend ../saiadmin-artd
 
 ## 验收
 
-最终候选安装 ZIP SHA256：`bc00d9251930694b00ee7cb6e58f45d98664cc37ccf525857e0f30c80e228af7`。安装包字节以 GitHub Release 的 SHA256SUMS 为最终校验。
+最终候选安装 ZIP SHA256：`1326cef722e7b1e87b25c275c1c0b6549b51300d3be85322c2b1d77ba9a4260d`。安装包字节以 GitHub Release 的 SHA256SUMS 为最终校验。
 
 - 30 项 TypeScript 核心/本地化测试通过；另有 PHP 校验、插件 ESLint、宿主接入脚本的预览/幂等/拒绝未知结构测试。
 - 两种 locale 资源不互相串状态；带变量文案及 JSON 示例正确；所有发行 Vue 模板均可编译，无未接入翻译的静态中文 UI。
@@ -46,3 +46,5 @@ python3 plugin/boardstudio/bin/integrate-frontend.py --frontend ../saiadmin-artd
 ![深色中文设计器](images/designer-zh-dark.jpg)
 
 CI 仅验证单测、语法、构建和 ZIP，不把它当作数据库或浏览器验收的替代。其它宿主版本、自定义语言及主题扩展须按其实际实现回归。
+
+启动接入使用可选 eager glob，插件目录卸载后不产生悬空静态 import；构建测试覆盖注册模块存在与删除两种状态。

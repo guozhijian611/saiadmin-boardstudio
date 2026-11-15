@@ -64,7 +64,7 @@ python3 tools/boardstudio/package.py --output ./dist/boardstudio-2.1.0.zip
 后台复用宿主 Element Plus 语义 token 与 vue-i18n 的 zh/en 全局 Composer。安装后在宿主 `saiadmin-artd/src/main.ts` 的应用挂载之前添加：
 
 ```ts
-import './views/plugin/boardstudio/i18n/host'
+import.meta.glob('./views/plugin/boardstudio/i18n/host.ts', { eager: true })
 ```
 
 该入口随 ZIP 提供，用于导航菜单启动时的词条注册；无须改动宿主 src/locales。页面本身自动合并命名空间。宿主需要重新构建；不接入该入口时，新菜单 key 无法在首次进入插件前翻译。不要修改默认语言或 fallback 来替代正确注册。
@@ -79,3 +79,5 @@ python3 plugin/boardstudio/bin/integrate-frontend.py --frontend ../saiadmin-artd
 ```
 
 原文件备份为 `*.boardstudio.bak`；脚本不识别的宿主拒绝修改，不覆盖共享语言文件。此显式接入是完整菜单与无损语言切换的安装步骤。
+
+语言入口使用可选 glob；卸载插件后没有匹配文件时不会留下缺失模块导入。宿主中的路由刷新保护只作用于插件路由，插件移除后不影响其它页面。

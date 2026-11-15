@@ -6,8 +6,10 @@ p=argparse.ArgumentParser(description=__doc__);p.add_argument('--frontend',requi
 root=a.frontend.resolve();main=root/'src/main.ts';header=root/'src/components/core/layouts/art-header-bar/index.vue'
 if not main.is_file() or not header.is_file():raise SystemExit('Unsupported host: expected src/main.ts and Art header bar')
 original={main:main.read_text(),header:header.read_text()};updated=dict(original)
-line="import './views/plugin/boardstudio/i18n/host'\n"
-if line.strip() not in original[main]:updated[main]=line+original[main]
+line="import.meta.glob('./views/plugin/boardstudio/i18n/host.ts', { eager: true })\n"
+legacy="import './views/plugin/boardstudio/i18n/host'\n"
+updated[main]=original[main].replace(legacy,'')
+if line.strip() not in updated[main]:updated[main]=line+updated[main]
 s=original[header]
 marker="if (!router.currentRoute.value.path.startsWith('/boardstudio/')) reload(50)"
 if marker not in s:

@@ -38,7 +38,7 @@ flowchart LR
 3. 根据宿主提示安装前端依赖。在宿主 `saiadmin-artd/src/main.ts` 增加一次语言注册导入（放在应用挂载前），再重新构建管理端：
 
    ```ts
-   import './views/plugin/boardstudio/i18n/host'
+   import.meta.glob('./views/plugin/boardstudio/i18n/host.ts', { eager: true })
    ```
 
    宿主 6.1.5 的语言按钮默认会重建页面。为避免插件表单丢失，推荐直接运行随包提供的接入脚本，它会同时补齐上述导入和插件路由的刷新保护：
@@ -124,3 +124,5 @@ git push origin v2.2.0
 欢迎通过 [Issues](https://github.com/guozhijian611/saiadmin-boardstudio/issues) 反馈问题或提交 PR，请参考 [贡献指南](CONTRIBUTING.md)；敏感漏洞使用 [安全报告说明](SECURITY.md)。
 
 基于 [B8AIAdmin](https://github.com/guozhijian611/B8AIAdmin) 拆分与重构，感谢 SaiAdmin、Webman、Art Design Pro、Vue、Element Plus 和 ECharts。本项目使用 [MIT](LICENSE)；保留上游版权和依赖许可，详见 [第三方声明](THIRD_PARTY_NOTICES.md)。
+
+语言入口使用可选 glob；卸载插件后没有匹配文件时不会留下缺失模块导入。宿主中的路由刷新保护只作用于插件路由，插件移除后不影响其它页面。
