@@ -33,7 +33,7 @@ jobs:
           coverage: none
       - name: Install locked dependencies
         run: pnpm --dir saiadmin-artd install --frozen-lockfile
-      - name: Lint shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2 syntax
+      - name: Lint PHP syntax
         run: find server/plugin/boardstudio tools/boardstudio/tests -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Verify plugin
         run: node tools/boardstudio/verify.mjs
