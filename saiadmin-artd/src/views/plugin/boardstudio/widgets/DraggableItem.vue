@@ -174,6 +174,6 @@
   }
 
   :global(.boardstudio-draggable-active) {
-    outline: 1px solid #4ea1ff;
+    outline: 1px solid var(--el-color-primary);
   }
 </style>

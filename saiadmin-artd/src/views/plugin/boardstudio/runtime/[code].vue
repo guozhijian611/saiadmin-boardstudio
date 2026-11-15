@@ -1,7 +1,7 @@
 <template>
   <div class="runtime-page" :style="{ background: bgColor }">
-    <div v-if="loading" class="runtime-state">加载中</div>
-    <div v-else-if="error" class="runtime-state">{{ error }}</div>
+    <div v-if="loading" class="runtime-state">{{ bt('加载中') }}</div>
+    <div v-else-if="error" class="runtime-state">{{ bt(error) }}</div>
     <div v-else ref="viewportRef" class="runtime-viewport">
       <div class="runtime-canvas" :style="canvasStyle">
         <div
@@ -29,6 +29,9 @@
 </template>
 
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { RefreshScheduler } from '../core/scheduler'
   import { LatestRequests } from '../core/latest'
   import api from '../api/runtime'
@@ -274,8 +277,8 @@
     justify-content: center;
     width: 100vw;
     height: 100vh;
-    color: #d7e7ff;
-    background: #07111f;
+    color: var(--el-text-color-primary);
+    background: var(--el-bg-color-page);
   }
 
   .runtime-viewport {

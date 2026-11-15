@@ -1,86 +1,86 @@
 <template>
   <div class="inspector">
     <h3>{{
-      node.id === document.rootId ? '页面' : node.kind === 'container' ? '容器' : '组件'
+      node.id === document.rootId ? bt('页面') : node.kind === 'container' ? bt('容器') : bt('组件')
     }}</h3>
     <ElForm label-position="top" size="small">
-      <ElFormItem label="名称"
+      <ElFormItem :label="bt('名称')"
         ><ElInput :model-value="node.name" @change="patch({ name: $event })"
       /></ElFormItem>
       <template v-if="node.id === document.rootId">
-        <ElFormItem label="页面宽度"
+        <ElFormItem :label="bt('页面宽度')"
           ><ElInputNumber
             :model-value="document.page.width"
             :min="320"
             :max="16384"
             @change="page('width', $event)"
         /></ElFormItem>
-        <ElFormItem label="页面高度"
+        <ElFormItem :label="bt('页面高度')"
           ><ElInputNumber
             :model-value="document.page.height"
             :min="240"
             :max="16384"
             @change="page('height', $event)"
         /></ElFormItem>
-        <ElFormItem label="尺寸策略"
+        <ElFormItem :label="bt('尺寸策略')"
           ><ElSelect
             :model-value="document.page.sizing"
             @change="$emit('command', { type: 'page', patch: { sizing: $event } })"
-            ><ElOption label="固定画布" value="fixed" /><ElOption
-              label="响应容器宽度"
+            ><ElOption :label="bt('固定画布')" value="fixed" /><ElOption
+              :label="bt('响应容器宽度')"
               value="responsive" /></ElSelect
         ></ElFormItem>
       </template>
       <ElTabs v-model="tab">
-        <ElTabPane label="布局" name="layout">
+        <ElTabPane :label="bt('布局')" name="layout">
           <template v-if="node.layout">
-            <ElFormItem label="容器排版"
+            <ElFormItem :label="bt('容器排版')"
               ><ElSelect
                 :model-value="node.layout.mode"
                 @change="$emit('command', { type: 'layout', id: node.id, mode: $event })"
-                ><ElOption label="自由布局" value="free" /><ElOption
-                  label="Flex 弹性布局"
-                  value="flex" /><ElOption label="Grid 网格布局" value="grid" /></ElSelect
+                ><ElOption :label="bt('自由布局')" value="free" /><ElOption
+                  :label="bt('Flex 弹性布局')"
+                  value="flex" /><ElOption :label="bt('Grid 网格布局')" value="grid" /></ElSelect
             ></ElFormItem>
-            <p class="hint">切换后按新规则排版，可撤销；自由布局坐标会保留。</p>
+            <p class="hint">{{ bt('切换后按新规则排版，可撤销；自由布局坐标会保留。') }}</p>
             <template v-if="node.layout.mode === 'flex'">
-              <ElFormItem label="排列方向"
+              <ElFormItem :label="bt('排列方向')"
                 ><ElSelect
                   :model-value="node.layout.direction"
                   @change="container('direction', $event)"
-                  ><ElOption label="横向" value="row" /><ElOption
-                    label="纵向"
+                  ><ElOption :label="bt('横向')" value="row" /><ElOption
+                    :label="bt('纵向')"
                     value="column" /></ElSelect
               ></ElFormItem>
-              <ElFormItem label="换行"
+              <ElFormItem :label="bt('换行')"
                 ><ElSwitch :model-value="node.layout.wrap" @change="container('wrap', $event)"
               /></ElFormItem>
-              <ElFormItem label="主轴对齐"
+              <ElFormItem :label="bt('主轴对齐')"
                 ><ElSelect :model-value="node.layout.justify" @change="container('justify', $event)"
                   ><ElOption
                     v-for="(label, value) in justify"
                     :key="value"
-                    :label="label"
+                    :label="bt(label)"
                     :value="value" /></ElSelect
               ></ElFormItem>
             </template>
-            <ElFormItem v-if="node.layout.mode !== 'free'" label="交叉轴对齐"
+            <ElFormItem v-if="node.layout.mode !== 'free'" :label="bt('交叉轴对齐')"
               ><ElSelect :model-value="node.layout.align" @change="container('align', $event)"
                 ><ElOption
                   v-for="(label, value) in align"
                   :key="value"
-                  :label="label"
+                  :label="bt(label)"
                   :value="value" /></ElSelect
             ></ElFormItem>
             <template v-if="node.layout.mode === 'grid'">
-              <ElFormItem label="列数"
+              <ElFormItem :label="bt('列数')"
                 ><ElInputNumber
                   :model-value="node.layout.columns"
                   :min="1"
                   :max="24"
                   @change="container('columns', $event)"
               /></ElFormItem>
-              <ElFormItem label="行高"
+              <ElFormItem :label="bt('行高')"
                 ><ElInputNumber
                   :model-value="node.layout.rowHeight"
                   :min="1"
@@ -88,14 +88,14 @@
                   @change="container('rowHeight', $event)"
               /></ElFormItem>
             </template>
-            <ElFormItem label="内边距"
+            <ElFormItem :label="bt('内边距')"
               ><ElInputNumber
                 :model-value="node.layout.padding"
                 :min="0"
                 :max="1000"
                 @change="container('padding', $event)"
             /></ElFormItem>
-            <ElFormItem label="子节点间距"
+            <ElFormItem :label="bt('子节点间距')"
               ><ElInputNumber
                 :model-value="node.layout.gap"
                 :min="0"
@@ -104,14 +104,14 @@
             /></ElFormItem>
           </template>
           <template v-if="parent">
-            <ElFormItem label="所属容器"
+            <ElFormItem :label="bt('所属容器')"
               ><ElSelect
                 :model-value="parent.id"
                 @change="$emit('command', { type: 'move', id: node.id, parentId: $event })"
                 ><ElOption
                   v-for="target in parents"
                   :key="target.id"
-                  :label="target.name"
+                  :label="bt(target.name)"
                   :value="target.id" /></ElSelect
             ></ElFormItem>
             <template v-if="parent.layout?.mode === 'free'">
@@ -123,14 +123,14 @@
               /></ElFormItem>
             </template>
             <template v-if="parent.layout?.mode !== 'grid'">
-              <ElFormItem label="宽度"
+              <ElFormItem :label="bt('宽度')"
                 ><ElInputNumber
                   :model-value="node.placement.width"
                   :min="1"
                   :max="16384"
                   @change="position('width', $event)"
               /></ElFormItem>
-              <ElFormItem label="高度"
+              <ElFormItem :label="bt('高度')"
                 ><ElInputNumber
                   :model-value="node.placement.height"
                   :min="1"
@@ -139,14 +139,14 @@
               /></ElFormItem>
             </template>
             <template v-if="parent.layout?.mode === 'flex'">
-              <ElFormItem label="伸展比例"
+              <ElFormItem :label="bt('伸展比例')"
                 ><ElInputNumber
                   :model-value="node.placement.grow"
                   :min="0"
                   :max="100"
                   @change="position('grow', $event)"
               /></ElFormItem>
-              <ElFormItem label="收缩比例"
+              <ElFormItem :label="bt('收缩比例')"
                 ><ElInputNumber
                   :model-value="node.placement.shrink"
                   :min="0"
@@ -155,14 +155,14 @@
               /></ElFormItem>
             </template>
             <template v-if="parent.layout?.mode === 'grid'">
-              <ElFormItem label="跨列"
+              <ElFormItem :label="bt('跨列')"
                 ><ElInputNumber
                   :model-value="node.placement.columnSpan"
                   :min="1"
                   :max="24"
                   @change="position('columnSpan', $event)"
               /></ElFormItem>
-              <ElFormItem label="跨行"
+              <ElFormItem :label="bt('跨行')"
                 ><ElInputNumber
                   :model-value="node.placement.rowSpan"
                   :min="1"
@@ -170,7 +170,7 @@
                   @change="position('rowSpan', $event)"
               /></ElFormItem>
             </template>
-            <ElFormItem label="层级"
+            <ElFormItem :label="bt('层级')"
               ><ElInputNumber
                 :model-value="node.placement.zIndex"
                 :min="0"
@@ -178,32 +178,32 @@
             /></ElFormItem>
           </template>
         </ElTabPane>
-        <ElTabPane label="外观" name="appearance">
-          <ElFormItem label="背景"
+        <ElTabPane :label="bt('外观')" name="appearance">
+          <ElFormItem :label="bt('背景')"
             ><ElInput
               :model-value="node.appearance.background"
               @change="appearance('background', $event)"
           /></ElFormItem>
-          <ElFormItem label="边框颜色"
+          <ElFormItem :label="bt('边框颜色')"
             ><ElInput
               :model-value="node.appearance.borderColor"
               @change="appearance('borderColor', $event)"
           /></ElFormItem>
-          <ElFormItem label="边框宽度"
+          <ElFormItem :label="bt('边框宽度')"
             ><ElInputNumber
               :model-value="node.appearance.borderWidth"
               :min="0"
               :max="100"
               @change="appearance('borderWidth', $event)"
           /></ElFormItem>
-          <ElFormItem label="圆角"
+          <ElFormItem :label="bt('圆角')"
             ><ElInputNumber
               :model-value="node.appearance.borderRadius"
               :min="0"
               :max="1000"
               @change="appearance('borderRadius', $event)"
           /></ElFormItem>
-          <ElFormItem label="透明度"
+          <ElFormItem :label="bt('透明度')"
             ><ElInputNumber
               :model-value="node.appearance.opacity"
               :min="0"
@@ -215,10 +215,10 @@
         </ElTabPane>
       </ElTabs>
       <template v-if="parent">
-        <ElFormItem label="隐藏"
+        <ElFormItem :label="bt('隐藏')"
           ><ElSwitch :model-value="node.hidden" @change="patch({ hidden: Boolean($event) })"
         /></ElFormItem>
-        <ElFormItem label="锁定"
+        <ElFormItem :label="bt('锁定')"
           ><ElSwitch :model-value="node.locked" @change="patch({ locked: Boolean($event) })"
         /></ElFormItem>
       </template>
@@ -226,6 +226,9 @@
   </div>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { computed, ref } from 'vue'
   import WidgetProperties from './WidgetProperties.vue'
   import { descendants, parentOf } from '../document/model'
@@ -271,7 +274,7 @@
   }
   .hint {
     font-size: 12px;
-    color: #64748b;
+    color: var(--el-text-color-secondary);
   }
   :deep(.el-input-number),
   :deep(.el-select) {

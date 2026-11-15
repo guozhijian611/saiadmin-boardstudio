@@ -6,9 +6,9 @@
   >
     <div v-if="component.title" class="widget-title"
       >{{ component.title
-      }}<small v-if="!hasBoundDataset && !decorTypes.has(component.type)" class="sample-badge"
-        >示例数据</small
-      ></div
+      }}<small v-if="!hasBoundDataset && !decorTypes.has(component.type)" class="sample-badge">{{
+        bt('示例数据')
+      }}</small></div
     >
     <div class="widget-body">
       <ArtBarChart
@@ -38,14 +38,14 @@
         :positive-data="dualPositiveData"
         :negative-data="dualNegativeData"
         :x-axis-data="axisData"
-        :positive-name="component.option?.positiveName || '正向'"
-        :negative-name="component.option?.negativeName || '负向'"
+        :positive-name="component.option?.positiveName || bt('正向')"
+        :negative-name="component.option?.negativeName || bt('负向')"
         :y-axis-min="dualAxisMin"
         :y-axis-max="dualAxisMax"
         v-bind="component.option"
       />
       <div v-else-if="component.type === 'art-dual-bar-compare-chart'" class="chart-empty">
-        {{ dualCompareEmptyText }}
+        {{ bt(dualCompareEmptyText) }}
       </div>
       <ArtKLineChart
         v-else-if="component.type === 'art-k-line-chart' && kLineData.length"
@@ -54,7 +54,7 @@
         v-bind="component.option"
       />
       <div v-else-if="component.type === 'art-k-line-chart'" class="chart-empty">
-        {{ kLineEmptyText }}
+        {{ bt(kLineEmptyText) }}
       </div>
       <ArtGaugeChart
         v-else-if="component.type === 'art-gauge-chart'"
@@ -78,7 +78,7 @@
         v-bind="component.option"
       />
       <div v-else-if="component.type === 'art-heatmap-chart'" class="chart-empty">
-        {{ heatmapEmptyText }}
+        {{ bt(heatmapEmptyText) }}
       </div>
       <ArtRingChart
         v-else-if="component.type === 'art-ring-chart'"
@@ -112,7 +112,7 @@
         size="small"
         height="100%"
         :stripe="Boolean(component.option?.rowStripe)"
-        empty-text="暂无数据"
+        :empty-text="bt('暂无数据')"
       >
         <ElTableColumn v-if="component.option?.showIndex" type="index" label="#" width="52" />
         <ElTableColumn
@@ -155,7 +155,7 @@
             </span>
           </div>
         </template>
-        <div v-else class="progress-rank__empty">{{ progressRankEmptyText }}</div>
+        <div v-else class="progress-rank__empty">{{ bt(progressRankEmptyText) }}</div>
       </div>
       <div
         v-else-if="component.type === 'status-matrix'"
@@ -172,7 +172,7 @@
             <div class="status-matrix__topline">
               <span v-if="item.group" class="status-matrix__group">{{ item.group }}</span>
               <span v-if="component.option?.showStatus !== false" class="status-matrix__status">
-                {{ item.status || '正常' }}
+                {{ item.status || bt('正常') }}
               </span>
             </div>
             <div class="status-matrix__label">{{ item.label }}</div>
@@ -184,7 +184,7 @@
             </div>
           </div>
         </template>
-        <div v-else class="status-matrix__empty">{{ statusMatrixEmptyText }}</div>
+        <div v-else class="status-matrix__empty">{{ bt(statusMatrixEmptyText) }}</div>
       </div>
       <div v-else-if="component.type === 'image-carousel'" class="image-carousel">
         <ElCarousel
@@ -204,13 +204,13 @@
                 :style="{ objectFit: carouselImageFit }"
               />
               <div v-else class="carousel-slide__fallback">
-                {{ slide.title || `轮播 ${index + 1}` }}
+                {{ slide.title || bt('轮播 {p0}', { p0: index + 1 }) }}
               </div>
               <div v-if="slide.title" class="carousel-slide__title">{{ slide.title }}</div>
             </div>
           </ElCarouselItem>
         </ElCarousel>
-        <div v-else class="carousel-empty">暂无图片</div>
+        <div v-else class="carousel-empty">{{ bt('暂无图片') }}</div>
       </div>
       <div
         v-else-if="component.type === 'event-timeline'"
@@ -242,7 +242,7 @@
             </div>
           </div>
         </template>
-        <div v-else class="timeline-empty">{{ timelineEmptyText }}</div>
+        <div v-else class="timeline-empty">{{ bt(timelineEmptyText) }}</div>
       </div>
       <div v-else-if="component.type === 'alarm-list'" class="alarm-list" :style="alarmStyleVars">
         <template v-if="alarmItems.length">
@@ -273,7 +273,7 @@
             </div>
           </div>
         </template>
-        <div v-else class="alarm-list__empty">{{ alarmEmptyText }}</div>
+        <div v-else class="alarm-list__empty">{{ bt(alarmEmptyText) }}</div>
       </div>
       <div v-else-if="component.type === 'geo-point-map'" class="geo-map">
         <div class="geo-map__grid"></div>
@@ -292,7 +292,7 @@
             </span>
           </div>
         </template>
-        <div v-else class="geo-map__empty">{{ geoMapEmptyText }}</div>
+        <div v-else class="geo-map__empty">{{ bt(geoMapEmptyText) }}</div>
       </div>
       <div
         v-else-if="component.type === 'decor-border'"
@@ -338,13 +338,16 @@
       >
         <span class="decor-divider__line"></span>
       </div>
-      <div v-else class="unsupported">组件不可用</div>
+      <div v-else class="unsupported">{{ bt('组件不可用') }}</div>
     </div>
-    <div v-if="error" class="widget-error">{{ error }}</div>
+    <div v-if="error" class="widget-error">{{ bt(error) }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt, locale } = useBoardI18n()
+
   import ArtBarChart from '../charts/art-bar-chart/index.vue'
   import ArtDualBarCompareChart from '../charts/art-dual-bar-compare-chart/index.vue'
   import ArtFunnelChart from '../charts/art-funnel-chart/index.vue'
@@ -1393,7 +1396,7 @@
     if (!Number.isFinite(value)) return String(raw ?? '-')
 
     const decimals = normalizeDecimals(props.component.option?.decimals)
-    return value.toLocaleString(undefined, {
+    return value.toLocaleString(locale.value, {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals
     })
@@ -1641,7 +1644,7 @@
   }
 
   function formatProgressRankNumber(value: number, decimals: number) {
-    return value.toLocaleString(undefined, {
+    return value.toLocaleString(locale.value, {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals
     })
@@ -1693,7 +1696,7 @@
     const decimals = normalizeDecimals(props.component.option?.decimals)
     const unit = String(props.component.option?.unit ?? '')
     const normalized = unit === '%' && numeric > 0 && numeric <= 1 ? numeric * 100 : numeric
-    return `${normalized.toLocaleString(undefined, {
+    return `${normalized.toLocaleString(locale.value, {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals
     })}${unit}`

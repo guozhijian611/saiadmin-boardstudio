@@ -1,22 +1,29 @@
 <template>
-  <ElButton size="small" @click="open">页面参数</ElButton>
-  <ElDialog v-model="visible" title="页面参数与联动" width="740px">
-    <p>参数在发布大屏显示为筛选项。数据绑定可引用参数，同一参数会同时刷新关联组件。</p>
+  <ElButton size="small" @click="open">{{ bt('页面参数') }}</ElButton>
+  <ElDialog v-model="visible" :title="bt('页面参数与联动')" width="740px">
+    <p>{{ bt('参数在发布大屏显示为筛选项。数据绑定可引用参数，同一参数会同时刷新关联组件。') }}</p>
     <div class="parameter-row" v-for="(row, index) in rows" :key="index">
-      <ElInput v-model="row.name" placeholder="参数名" />
+      <ElInput v-model="row.name" :placeholder="bt('参数名')" />
       <ElSelect v-model="row.type"
-        ><ElOption value="string" label="文本" /><ElOption value="number" label="数字" /><ElOption
-          value="boolean"
-          label="布尔"
+        ><ElOption value="string" :label="bt('文本')" /><ElOption
+          value="number"
+          :label="bt('数字')" /><ElOption value="boolean" :label="bt('布尔')"
       /></ElSelect>
-      <ElInput v-model="row.default" placeholder="默认值" />
-      <ElButton @click="rows.splice(index, 1)">删除</ElButton>
+      <ElInput v-model="row.default" :placeholder="bt('默认值')" />
+      <ElButton @click="rows.splice(index, 1)">{{ bt('删除') }}</ElButton>
     </div>
-    <ElButton @click="rows.push({ name: '', type: 'string', default: '' })">添加参数</ElButton>
-    <template #footer><ElButton type="primary" @click="apply">应用参数定义</ElButton></template>
+    <ElButton @click="rows.push({ name: '', type: 'string', default: '' })">{{
+      bt('添加参数')
+    }}</ElButton>
+    <template #footer
+      ><ElButton type="primary" @click="apply">{{ bt('应用参数定义') }}</ElButton></template
+    >
   </ElDialog>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { ref } from 'vue'
   import { ElMessage } from 'element-plus'
   import type { BoardDocument } from '../document/types'
@@ -39,7 +46,7 @@
       const parameters: BoardDocument['parameters'] = {}
       for (const row of rows.value) {
         if (!/^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(row.name) || Object.hasOwn(parameters, row.name))
-          throw new Error('参数名必须是唯一的英文字母、数字或下划线')
+          throw new Error(bt('参数名必须是唯一的英文字母、数字或下划线'))
         parameters[row.name] = { type: row.type, default: row.default }
       }
       const values = resolvePageParameters({ ...props.document, parameters })
@@ -47,7 +54,7 @@
       emit('command', { type: 'parameters', parameters })
       visible.value = false
     } catch (e) {
-      ElMessage.error((e as Error).message)
+      ElMessage.error(bt((e as Error).message))
     }
   }
 </script>

@@ -1,10 +1,15 @@
 <template>
   <ElCard shadow="never">
-    <template #header><h2>预设模板</h2></template>
+    <template #header
+      ><h2>{{ bt('预设模板') }}</h2></template
+    >
     <PresetGallery @select="openPreset" />
   </ElCard>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { useRouter } from 'vue-router'
   import { ElMessageBox } from 'element-plus'
   import PresetGallery from './PresetGallery.vue'
@@ -13,9 +18,12 @@
   const openPreset = async (preset: Preset) => {
     try {
       await ElMessageBox.confirm(
-        `进入大屏编辑器，在“${preset.type === 'screen' ? '预设模板' : '组件预设'}”中选择“${preset.name}”即可使用。`,
-        '使用预设',
-        { confirmButtonText: '前往大屏管理', cancelButtonText: '继续浏览' }
+        bt('进入大屏编辑器，在“{p0}”中选择“{p1}”即可使用。', {
+          p0: preset.type === 'screen' ? '预设模板' : '组件预设',
+          p1: preset.name
+        }),
+        bt('使用预设'),
+        { confirmButtonText: bt('前往大屏管理'), cancelButtonText: bt('继续浏览') }
       )
     } catch {
       return

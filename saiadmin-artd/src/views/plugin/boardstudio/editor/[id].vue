@@ -28,12 +28,12 @@
 
     <div class="editor-main">
       <aside class="widget-panel">
-        <div class="panel-title">组件</div>
+        <div class="panel-title">{{ bt('组件') }}</div>
         <ElInput
           v-model="widgetSearch"
           clearable
-          placeholder="搜索组件"
-          aria-label="搜索组件"
+          :placeholder="bt('搜索组件')"
+          :aria-label="bt('搜索组件')"
           class="mb-3"
         />
         <button
@@ -42,7 +42,7 @@
           @click="openPresets('component')"
         >
           <ArtSvgIcon icon="ri:store-2-line" />
-          <span>组件预设</span>
+          <span>{{ bt('组件预设') }}</span>
         </button>
         <button
           v-for="widget in filteredWidgets"
@@ -52,11 +52,11 @@
           @click="addWidget(widget.type)"
         >
           <ArtSvgIcon :icon="widget.icon" />
-          <span>{{ widget.name }}</span>
+          <span>{{ bt(widget.name) }}</span>
         </button>
-        <div class="panel-title panel-title--layers">图层</div>
+        <div class="panel-title panel-title--layers">{{ bt('图层') }}</div>
         <div class="layer-list">
-          <ElText v-if="!layerItems.length" type="info" size="small">暂无组件</ElText>
+          <ElText v-if="!layerItems.length" type="info" size="small">{{ bt('暂无组件') }}</ElText>
           <div
             v-for="component in layerItems"
             :key="component.id"
@@ -66,11 +66,11 @@
           >
             <span class="layer-item__name">{{ component.title || componentName(component) }}</span>
             <span class="layer-item__type">{{ componentName(component) }}</span>
-            <span v-if="componentGroupId(component)" class="layer-item__tag">组</span>
+            <span v-if="componentGroupId(component)" class="layer-item__tag">{{ bt('组') }}</span>
             <span class="layer-item__actions">
               <button
                 type="button"
-                title="上移"
+                :title="bt('上移')"
                 :disabled="isLayerTop(component)"
                 @click.stop="moveLayer(component, 'up')"
               >
@@ -78,16 +78,21 @@
               </button>
               <button
                 type="button"
-                title="下移"
+                :title="bt('下移')"
                 :disabled="isLayerBottom(component)"
                 @click.stop="moveLayer(component, 'down')"
               >
                 ↓
               </button>
-              <button type="button" title="置顶" @click.stop="sendLayerToTop(component)">顶</button>
-              <button type="button" title="置底" @click.stop="sendLayerToBottom(component)">
-                底
-              </button>
+              <button type="button" :title="bt('置顶')" @click.stop="sendLayerToTop(component)">{{
+                bt('顶')
+              }}</button>
+              <button
+                type="button"
+                :title="bt('置底')"
+                @click.stop="sendLayerToBottom(component)"
+                >{{ bt('底') }}</button
+              >
             </span>
           </div>
         </div>
@@ -152,22 +157,22 @@
 
       <aside class="property-panel">
         <template v-if="selectedComponent">
-          <div class="panel-title">属性</div>
+          <div class="panel-title">{{ bt('属性') }}</div>
           <ElForm label-width="84px">
-            <ElFormItem label="标题">
+            <ElFormItem :label="bt('标题')">
               <ElInput v-model="selectedComponent.title" />
             </ElFormItem>
-            <ElFormItem label="类型">
+            <ElFormItem :label="bt('类型')">
               <ElSelect v-model="selectedComponent.type">
                 <ElOption
                   v-for="widget in filteredWidgets"
                   :key="widget.type"
-                  :label="widget.name"
+                  :label="bt(widget.name)"
                   :value="widget.type"
                 />
               </ElSelect>
             </ElFormItem>
-            <ElFormItem v-if="requiresDataset" label="查询模板">
+            <ElFormItem v-if="requiresDataset" :label="bt('查询模板')">
               <div class="template-bind-row">
                 <ElSelect
                   v-model="selectedComponent.dataset.queryTemplateId"
@@ -178,7 +183,7 @@
                   <ElOption
                     v-for="item in templateOptions"
                     :key="item.id"
-                    :label="item.name"
+                    :label="bt(item.name)"
                     :value="item.id"
                   />
                 </ElSelect>
@@ -187,15 +192,14 @@
                   :disabled="!selectedComponent.dataset.queryTemplateId"
                   :loading="selectedPreviewLoading"
                   @click="previewSelectedData"
+                  >{{ bt('预览') }}</ElButton
                 >
-                  预览
-                </ElButton>
               </div>
             </ElFormItem>
-            <ElFormItem v-if="requiresDataset" label="刷新秒">
+            <ElFormItem v-if="requiresDataset" :label="bt('刷新秒')">
               <ElInputNumber v-model="selectedComponent.dataset.refresh" :min="10" :max="3600" />
             </ElFormItem>
-            <ElFormItem v-if="requiresDataset" label="查询参数">
+            <ElFormItem v-if="requiresDataset" :label="bt('查询参数')">
               <ElInput
                 v-model="datasetParamsText"
                 type="textarea"
@@ -204,62 +208,62 @@
                 @blur="applySelectedDatasetParams"
               />
             </ElFormItem>
-            <ElFormItem v-if="supportsFieldMapping" label="类目字段">
+            <ElFormItem v-if="supportsFieldMapping" :label="bt('类目字段')">
               <ElSelect
                 v-model="selectedComponent.dataset.mapping!.labelField"
                 clearable
                 filterable
-                placeholder="自动识别"
+                :placeholder="bt('自动识别')"
                 :disabled="!fieldOptions.length"
               >
                 <ElOption
                   v-for="field in fieldOptions"
                   :key="field"
-                  :label="field"
+                  :label="bt(field)"
                   :value="field"
                 />
               </ElSelect>
             </ElFormItem>
-            <ElFormItem v-if="supportsFieldMapping" label="数值字段">
+            <ElFormItem v-if="supportsFieldMapping" :label="bt('数值字段')">
               <ElSelect
                 v-model="selectedComponent.dataset.mapping!.valueField"
                 clearable
                 filterable
-                placeholder="自动识别"
+                :placeholder="bt('自动识别')"
                 :disabled="!fieldOptions.length"
               >
                 <ElOption
                   v-for="field in numericFieldOptions"
                   :key="field"
-                  :label="field"
+                  :label="bt(field)"
                   :value="field"
                 />
               </ElSelect>
             </ElFormItem>
-            <ElFormItem v-if="selectedComponent.type === 'data-table'" label="表格字段">
+            <ElFormItem v-if="selectedComponent.type === 'data-table'" :label="bt('表格字段')">
               <ElSelect
                 v-model="selectedComponent.dataset.mapping!.tableFields"
                 multiple
                 collapse-tags
                 collapse-tags-tooltip
                 filterable
-                placeholder="默认前 8 列"
+                :placeholder="bt('默认前 8 列')"
                 :disabled="!fieldOptions.length"
                 @change="syncSelectedTableColumns"
               >
                 <ElOption
                   v-for="field in fieldOptions"
                   :key="field"
-                  :label="field"
+                  :label="bt(field)"
                   :value="field"
                 />
               </ElSelect>
             </ElFormItem>
-            <ElFormItem v-if="selectedComponent.type === 'data-table'" label="列配置">
+            <ElFormItem v-if="selectedComponent.type === 'data-table'" :label="bt('列配置')">
               <div class="table-column-config">
-                <ElText v-if="!selectedTableColumns.length" type="info" size="small">
-                  选择表格字段后可配置列别名、宽度和对齐
-                </ElText>
+                <ElText v-if="!selectedTableColumns.length" type="info" size="small">{{
+                  bt('选择表格字段后可配置列别名、宽度和对齐')
+                }}</ElText>
                 <div
                   v-for="column in selectedTableColumns"
                   :key="column.field"
@@ -268,7 +272,11 @@
                   <ElText class="table-column-config__field" truncated>
                     {{ column.field }}
                   </ElText>
-                  <ElInput v-model="column.label" clearable placeholder="显示名，默认字段名" />
+                  <ElInput
+                    v-model="column.label"
+                    clearable
+                    :placeholder="bt('显示名，默认字段名')"
+                  />
                   <div class="table-column-config__controls">
                     <ElInputNumber
                       v-model="column.width"
@@ -277,17 +285,17 @@
                       :max="600"
                       :step="10"
                       :controls="false"
-                      placeholder="宽度"
+                      :placeholder="bt('宽度')"
                     />
                     <ElSelect
                       v-model="column.align"
                       class="table-column-config__align"
-                      placeholder="对齐"
+                      :placeholder="bt('对齐')"
                     >
                       <ElOption
                         v-for="item in tableAlignOptions"
                         :key="item.value"
-                        :label="item.label"
+                        :label="bt(item.label)"
                         :value="item.value"
                       />
                     </ElSelect>
@@ -295,16 +303,16 @@
                 </div>
               </div>
             </ElFormItem>
-            <ElFormItem v-if="requiresDataset" label="数据预览">
+            <ElFormItem v-if="requiresDataset" :label="bt('数据预览')">
               <ElText v-if="selectedPreviewError" type="danger" truncated>
                 {{ selectedPreviewError }}
               </ElText>
-              <ElText v-else-if="selectedComponent.dataset.queryTemplateId" type="success">
-                已加载 {{ selectedPreviewRows.length }} 行
-              </ElText>
-              <ElText v-else type="info">未绑定查询模板，使用示例数据</ElText>
+              <ElText v-else-if="selectedComponent.dataset.queryTemplateId" type="success">{{
+                bt('已加载 {p0} 行', { p0: selectedPreviewRows.length })
+              }}</ElText>
+              <ElText v-else type="info">{{ bt('未绑定查询模板，使用示例数据') }}</ElText>
             </ElFormItem>
-            <ElFormItem label="位置">
+            <ElFormItem :label="bt('位置')">
               <ElSpace wrap>
                 <ElInputNumber
                   v-model="selectedComponent.rect.x"
@@ -318,7 +326,7 @@
                 />
               </ElSpace>
             </ElFormItem>
-            <ElFormItem label="尺寸">
+            <ElFormItem :label="bt('尺寸')">
               <ElSpace wrap>
                 <ElInputNumber
                   v-model="selectedComponent.rect.w"
@@ -332,14 +340,14 @@
                 />
               </ElSpace>
             </ElFormItem>
-            <ElFormItem label="层级">
+            <ElFormItem :label="bt('层级')">
               <ElInputNumber v-model="selectedComponent.rect.z" :min="1" :max="999" />
             </ElFormItem>
             <template v-if="selectedComponent.type === 'stat-number'">
-              <ElFormItem label="前缀">
-                <ElInput v-model="selectedComponent.option!.prefix" placeholder="例如 ¥" />
+              <ElFormItem :label="bt('前缀')">
+                <ElInput v-model="selectedComponent.option!.prefix" :placeholder="bt('例如 ¥')" />
               </ElFormItem>
-              <ElFormItem label="小数位">
+              <ElFormItem :label="bt('小数位')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.decimals"
                   :min="0"
@@ -348,12 +356,15 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="单位">
-                <ElInput v-model="selectedComponent.option!.unit" placeholder="例如 单、元、%" />
+              <ElFormItem :label="bt('单位')">
+                <ElInput
+                  v-model="selectedComponent.option!.unit"
+                  :placeholder="bt('例如 单、元、%')"
+                />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'data-table'">
-              <ElFormItem label="最大行数">
+              <ElFormItem :label="bt('最大行数')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.maxRows"
                   :min="0"
@@ -362,144 +373,144 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="序号列">
+              <ElFormItem :label="bt('序号列')">
                 <ElSwitch v-model="selectedComponent.option!.showIndex" />
               </ElFormItem>
-              <ElFormItem label="斑马纹">
+              <ElFormItem :label="bt('斑马纹')">
                 <ElSwitch v-model="selectedComponent.option!.rowStripe" />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'art-dual-bar-compare-chart'">
-              <ElFormItem label="正向字段">
+              <ElFormItem :label="bt('正向字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.positiveField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!numericFieldOptions.length"
                 >
                   <ElOption
                     v-for="field in numericFieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="负向字段">
+              <ElFormItem :label="bt('负向字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.negativeField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!numericFieldOptions.length"
                 >
                   <ElOption
                     v-for="field in numericFieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="正向名称">
+              <ElFormItem :label="bt('正向名称')">
                 <ElInput v-model="selectedComponent.option!.positiveName" />
               </ElFormItem>
-              <ElFormItem label="负向名称">
+              <ElFormItem :label="bt('负向名称')">
                 <ElInput v-model="selectedComponent.option!.negativeName" />
               </ElFormItem>
-              <ElFormItem label="显示图例">
+              <ElFormItem :label="bt('显示图例')">
                 <ElSwitch v-model="selectedComponent.option!.showLegend" />
               </ElFormItem>
-              <ElFormItem label="数值标签">
+              <ElFormItem :label="bt('数值标签')">
                 <ElSwitch v-model="selectedComponent.option!.showDataLabel" />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'art-k-line-chart'">
-              <ElFormItem label="时间字段">
+              <ElFormItem :label="bt('时间字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.timeField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="开盘字段">
+              <ElFormItem :label="bt('开盘字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.openField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!numericFieldOptions.length"
                 >
                   <ElOption
                     v-for="field in numericFieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="收盘字段">
+              <ElFormItem :label="bt('收盘字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.closeField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!numericFieldOptions.length"
                 >
                   <ElOption
                     v-for="field in numericFieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="最高字段">
+              <ElFormItem :label="bt('最高字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.highField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!numericFieldOptions.length"
                 >
                   <ElOption
                     v-for="field in numericFieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="最低字段">
+              <ElFormItem :label="bt('最低字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.lowField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!numericFieldOptions.length"
                 >
                   <ElOption
                     v-for="field in numericFieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="缩放条">
+              <ElFormItem :label="bt('缩放条')">
                 <ElSwitch v-model="selectedComponent.option!.showDataZoom" />
               </ElFormItem>
-              <ElFormItem v-if="selectedComponent.option!.showDataZoom" label="缩放范围">
+              <ElFormItem v-if="selectedComponent.option!.showDataZoom" :label="bt('缩放范围')">
                 <ElSpace wrap>
                   <ElInputNumber
                     v-model="selectedComponent.option!.dataZoomStart"
@@ -519,10 +530,13 @@
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'art-gauge-chart'">
-              <ElFormItem label="显示名称">
-                <ElInput v-model="selectedComponent.option!.name" placeholder="默认使用标题" />
+              <ElFormItem :label="bt('显示名称')">
+                <ElInput
+                  v-model="selectedComponent.option!.name"
+                  :placeholder="bt('默认使用标题')"
+                />
               </ElFormItem>
-              <ElFormItem label="最小值">
+              <ElFormItem :label="bt('最小值')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.min"
                   :min="-999999999"
@@ -530,7 +544,7 @@
                   :step="1"
                 />
               </ElFormItem>
-              <ElFormItem label="最大值">
+              <ElFormItem :label="bt('最大值')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.max"
                   :min="-999999999"
@@ -538,10 +552,10 @@
                   :step="1"
                 />
               </ElFormItem>
-              <ElFormItem label="单位">
+              <ElFormItem :label="bt('单位')">
                 <ElInput v-model="selectedComponent.option!.unit" maxlength="12" />
               </ElFormItem>
-              <ElFormItem label="小数位">
+              <ElFormItem :label="bt('小数位')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.decimals"
                   :min="0"
@@ -550,36 +564,36 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="指针">
+              <ElFormItem :label="bt('指针')">
                 <ElSwitch v-model="selectedComponent.option!.showPointer" />
               </ElFormItem>
-              <ElFormItem label="进度环">
+              <ElFormItem :label="bt('进度环')">
                 <ElSwitch v-model="selectedComponent.option!.showProgress" />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'art-funnel-chart'">
-              <ElFormItem label="显示标签">
+              <ElFormItem :label="bt('显示标签')">
                 <ElSwitch v-model="selectedComponent.option!.showLabel" />
               </ElFormItem>
-              <ElFormItem label="排序">
+              <ElFormItem :label="bt('排序')">
                 <ElSelect v-model="selectedComponent.option!.sort">
-                  <ElOption label="从大到小" value="descending" />
-                  <ElOption label="从小到大" value="ascending" />
-                  <ElOption label="不排序" value="none" />
+                  <ElOption :label="bt('从大到小')" value="descending" />
+                  <ElOption :label="bt('从小到大')" value="ascending" />
+                  <ElOption :label="bt('不排序')" value="none" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="显示图例">
+              <ElFormItem :label="bt('显示图例')">
                 <ElSwitch v-model="selectedComponent.option!.showLegend" />
               </ElFormItem>
-              <ElFormItem v-if="selectedComponent.option!.showLegend" label="图例位置">
+              <ElFormItem v-if="selectedComponent.option!.showLegend" :label="bt('图例位置')">
                 <ElSelect v-model="selectedComponent.option!.legendPosition">
-                  <ElOption label="右侧" value="right" />
-                  <ElOption label="左侧" value="left" />
-                  <ElOption label="顶部" value="top" />
-                  <ElOption label="底部" value="bottom" />
+                  <ElOption :label="bt('右侧')" value="right" />
+                  <ElOption :label="bt('左侧')" value="left" />
+                  <ElOption :label="bt('顶部')" value="top" />
+                  <ElOption :label="bt('底部')" value="bottom" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="块间距">
+              <ElFormItem :label="bt('块间距')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.gap"
                   :min="0"
@@ -588,62 +602,68 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="最小宽度">
-                <ElInput v-model="selectedComponent.option!.minSize" placeholder="例如 20%" />
+              <ElFormItem :label="bt('最小宽度')">
+                <ElInput
+                  v-model="selectedComponent.option!.minSize"
+                  :placeholder="bt('例如 20%')"
+                />
               </ElFormItem>
-              <ElFormItem label="最大宽度">
-                <ElInput v-model="selectedComponent.option!.maxSize" placeholder="例如 82%" />
+              <ElFormItem :label="bt('最大宽度')">
+                <ElInput
+                  v-model="selectedComponent.option!.maxSize"
+                  :placeholder="bt('例如 82%')"
+                />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'art-heatmap-chart'">
-              <ElFormItem label="X字段">
+              <ElFormItem :label="bt('X字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.xField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="Y字段">
+              <ElFormItem :label="bt('Y字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.yField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="显示数值">
+              <ElFormItem :label="bt('显示数值')">
                 <ElSwitch v-model="selectedComponent.option!.showLabel" />
               </ElFormItem>
-              <ElFormItem label="颜色标尺">
+              <ElFormItem :label="bt('颜色标尺')">
                 <ElSwitch v-model="selectedComponent.option!.showVisualMap" />
               </ElFormItem>
-              <ElFormItem label="坐标标签">
+              <ElFormItem :label="bt('坐标标签')">
                 <ElSwitch v-model="selectedComponent.option!.showAxisLabel" />
               </ElFormItem>
-              <ElFormItem label="坐标轴线">
+              <ElFormItem :label="bt('坐标轴线')">
                 <ElSwitch v-model="selectedComponent.option!.showAxisLine" />
               </ElFormItem>
-              <ElFormItem label="分割线">
+              <ElFormItem :label="bt('分割线')">
                 <ElSwitch v-model="selectedComponent.option!.showSplitLine" />
               </ElFormItem>
-              <ElFormItem label="取值范围">
+              <ElFormItem :label="bt('取值范围')">
                 <ElSpace wrap>
                   <ElInputNumber
                     v-model="selectedComponent.option!.min"
@@ -656,83 +676,83 @@
                     :min="-999999999"
                     :max="999999999"
                     :step="1"
-                    placeholder="自动"
+                    :placeholder="bt('自动')"
                   />
                 </ElSpace>
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'event-timeline'">
-              <ElFormItem label="时间字段">
+              <ElFormItem :label="bt('时间字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.timeField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="标题字段">
+              <ElFormItem :label="bt('标题字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.titleField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="内容字段">
+              <ElFormItem :label="bt('内容字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.contentField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="状态字段">
+              <ElFormItem :label="bt('状态字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.statusField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="排序">
+              <ElFormItem :label="bt('排序')">
                 <ElSelect v-model="selectedComponent.option!.sortOrder">
-                  <ElOption label="时间倒序" value="desc" />
-                  <ElOption label="时间正序" value="asc" />
+                  <ElOption :label="bt('时间倒序')" value="desc" />
+                  <ElOption :label="bt('时间正序')" value="asc" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="最大条数">
+              <ElFormItem :label="bt('最大条数')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.maxRows"
                   :min="0"
@@ -741,88 +761,88 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="显示时间">
+              <ElFormItem :label="bt('显示时间')">
                 <ElSwitch v-model="selectedComponent.option!.showTime" />
               </ElFormItem>
-              <ElFormItem label="显示内容">
+              <ElFormItem :label="bt('显示内容')">
                 <ElSwitch v-model="selectedComponent.option!.showContent" />
               </ElFormItem>
-              <ElFormItem label="强调色">
+              <ElFormItem :label="bt('强调色')">
                 <ElColorPicker v-model="selectedComponent.option!.accent" />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'alarm-list'">
-              <ElFormItem label="时间字段">
+              <ElFormItem :label="bt('时间字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.timeField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="标题字段">
+              <ElFormItem :label="bt('标题字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.titleField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="内容字段">
+              <ElFormItem :label="bt('内容字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.contentField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="级别字段">
+              <ElFormItem :label="bt('级别字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.levelField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="排序">
+              <ElFormItem :label="bt('排序')">
                 <ElSelect v-model="selectedComponent.option!.sortOrder">
-                  <ElOption label="时间倒序" value="desc" />
-                  <ElOption label="时间正序" value="asc" />
+                  <ElOption :label="bt('时间倒序')" value="desc" />
+                  <ElOption :label="bt('时间正序')" value="asc" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="最大条数">
+              <ElFormItem :label="bt('最大条数')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.maxRows"
                   :min="0"
@@ -831,89 +851,89 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="显示时间">
+              <ElFormItem :label="bt('显示时间')">
                 <ElSwitch v-model="selectedComponent.option!.showTime" />
               </ElFormItem>
-              <ElFormItem label="显示内容">
+              <ElFormItem :label="bt('显示内容')">
                 <ElSwitch v-model="selectedComponent.option!.showContent" />
               </ElFormItem>
-              <ElFormItem label="强调色">
+              <ElFormItem :label="bt('强调色')">
                 <ElColorPicker v-model="selectedComponent.option!.accent" />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'progress-rank'">
-              <ElFormItem label="名称字段">
+              <ElFormItem :label="bt('名称字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.labelField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="数值字段">
+              <ElFormItem :label="bt('数值字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.valueField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="目标字段">
+              <ElFormItem :label="bt('目标字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.targetField"
                   clearable
                   filterable
-                  placeholder="可选"
+                  :placeholder="bt('可选')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="状态字段">
+              <ElFormItem :label="bt('状态字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.statusField"
                   clearable
                   filterable
-                  placeholder="可选"
+                  :placeholder="bt('可选')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="排序">
+              <ElFormItem :label="bt('排序')">
                 <ElSelect v-model="selectedComponent.option!.sortOrder">
-                  <ElOption label="进度倒序" value="desc" />
-                  <ElOption label="进度正序" value="asc" />
-                  <ElOption label="原始顺序" value="none" />
+                  <ElOption :label="bt('进度倒序')" value="desc" />
+                  <ElOption :label="bt('进度正序')" value="asc" />
+                  <ElOption :label="bt('原始顺序')" value="none" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="最大条数">
+              <ElFormItem :label="bt('最大条数')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.maxRows"
                   :min="0"
@@ -922,10 +942,13 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="单位">
-                <ElInput v-model="selectedComponent.option!.unit" placeholder="例如 %、单、件" />
+              <ElFormItem :label="bt('单位')">
+                <ElInput
+                  v-model="selectedComponent.option!.unit"
+                  :placeholder="bt('例如 %、单、件')"
+                />
               </ElFormItem>
-              <ElFormItem label="小数位">
+              <ElFormItem :label="bt('小数位')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.decimals"
                   :min="0"
@@ -934,82 +957,82 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="显示排名">
+              <ElFormItem :label="bt('显示排名')">
                 <ElSwitch v-model="selectedComponent.option!.showRank" />
               </ElFormItem>
-              <ElFormItem label="显示数值">
+              <ElFormItem :label="bt('显示数值')">
                 <ElSwitch v-model="selectedComponent.option!.showValue" />
               </ElFormItem>
-              <ElFormItem label="强调色">
+              <ElFormItem :label="bt('强调色')">
                 <ElColorPicker v-model="selectedComponent.option!.accent" />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'status-matrix'">
-              <ElFormItem label="名称字段">
+              <ElFormItem :label="bt('名称字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.labelField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="状态字段">
+              <ElFormItem :label="bt('状态字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.statusField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="数值字段">
+              <ElFormItem :label="bt('数值字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.valueField"
                   clearable
                   filterable
-                  placeholder="可选"
+                  :placeholder="bt('可选')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="分组字段">
+              <ElFormItem :label="bt('分组字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.groupField"
                   clearable
                   filterable
-                  placeholder="可选"
+                  :placeholder="bt('可选')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="最大条数">
+              <ElFormItem :label="bt('最大条数')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.maxRows"
                   :min="0"
@@ -1018,7 +1041,7 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="列数">
+              <ElFormItem :label="bt('列数')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.columns"
                   :min="1"
@@ -1027,10 +1050,13 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="单位">
-                <ElInput v-model="selectedComponent.option!.unit" placeholder="例如 %、单、ms" />
+              <ElFormItem :label="bt('单位')">
+                <ElInput
+                  v-model="selectedComponent.option!.unit"
+                  :placeholder="bt('例如 %、单、ms')"
+                />
               </ElFormItem>
-              <ElFormItem label="小数位">
+              <ElFormItem :label="bt('小数位')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.decimals"
                   :min="0"
@@ -1039,50 +1065,50 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="显示状态">
+              <ElFormItem :label="bt('显示状态')">
                 <ElSwitch v-model="selectedComponent.option!.showStatus" />
               </ElFormItem>
-              <ElFormItem label="显示数值">
+              <ElFormItem :label="bt('显示数值')">
                 <ElSwitch v-model="selectedComponent.option!.showValue" />
               </ElFormItem>
-              <ElFormItem label="强调色">
+              <ElFormItem :label="bt('强调色')">
                 <ElColorPicker v-model="selectedComponent.option!.accent" />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'image-carousel'">
-              <ElFormItem label="图片字段">
+              <ElFormItem :label="bt('图片字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.imageField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="标题字段">
+              <ElFormItem :label="bt('标题字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.titleField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="切换毫秒">
+              <ElFormItem :label="bt('切换毫秒')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.interval"
                   :min="1000"
@@ -1091,96 +1117,96 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="图片适配">
+              <ElFormItem :label="bt('图片适配')">
                 <ElSelect v-model="selectedComponent.option!.imageFit">
                   <ElOption
                     v-for="item in imageFitOptions"
                     :key="item.value"
-                    :label="item.label"
+                    :label="bt(item.label)"
                     :value="item.value"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="指示点">
+              <ElFormItem :label="bt('指示点')">
                 <ElSwitch v-model="selectedComponent.option!.showDots" />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'geo-point-map'">
-              <ElFormItem label="经度字段">
+              <ElFormItem :label="bt('经度字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.lngField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="纬度字段">
+              <ElFormItem :label="bt('纬度字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.latField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="名称字段">
+              <ElFormItem :label="bt('名称字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.nameField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="数值字段">
+              <ElFormItem :label="bt('数值字段')">
                 <ElSelect
                   v-model="selectedComponent.option!.valueField"
                   clearable
                   filterable
-                  placeholder="自动识别"
+                  :placeholder="bt('自动识别')"
                   :disabled="!fieldOptions.length"
                 >
                   <ElOption
                     v-for="field in fieldOptions"
                     :key="field"
-                    :label="field"
+                    :label="bt(field)"
                     :value="field"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="地图范围">
+              <ElFormItem :label="bt('地图范围')">
                 <ElSelect v-model="selectedComponent.option!.region">
                   <ElOption
                     v-for="item in mapRegionOptions"
                     :key="item.value"
-                    :label="item.label"
+                    :label="bt(item.label)"
                     :value="item.value"
                   />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="点大小">
+              <ElFormItem :label="bt('点大小')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.pointSize"
                   :min="6"
@@ -1189,22 +1215,22 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="点标签">
+              <ElFormItem :label="bt('点标签')">
                 <ElSwitch v-model="selectedComponent.option!.showLabel" />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'decor-border'">
-              <ElFormItem label="样式">
+              <ElFormItem :label="bt('样式')">
                 <ElSelect v-model="selectedComponent.option!.borderStyle">
-                  <ElOption label="转角" value="corner" />
-                  <ElOption label="线条" value="line" />
-                  <ElOption label="辉光" value="glow" />
+                  <ElOption :label="bt('转角')" value="corner" />
+                  <ElOption :label="bt('线条')" value="line" />
+                  <ElOption :label="bt('辉光')" value="glow" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="强调色">
+              <ElFormItem :label="bt('强调色')">
                 <ElColorPicker v-model="selectedComponent.option!.accent" />
               </ElFormItem>
-              <ElFormItem label="透明度">
+              <ElFormItem :label="bt('透明度')">
                 <ElSlider
                   v-model="selectedComponent.option!.opacity"
                   :min="0.1"
@@ -1214,20 +1240,20 @@
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'decor-flow-border'">
-              <ElFormItem label="样式">
+              <ElFormItem :label="bt('样式')">
                 <ElSelect v-model="selectedComponent.option!.variant">
-                  <ElOption label="环绕" value="orbit" />
-                  <ElOption label="横扫" value="scan" />
-                  <ElOption label="转角" value="corner" />
+                  <ElOption :label="bt('环绕')" value="orbit" />
+                  <ElOption :label="bt('横扫')" value="scan" />
+                  <ElOption :label="bt('转角')" value="corner" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="主色">
+              <ElFormItem :label="bt('主色')">
                 <ElColorPicker v-model="selectedComponent.option!.accent" />
               </ElFormItem>
-              <ElFormItem label="副色">
+              <ElFormItem :label="bt('副色')">
                 <ElColorPicker v-model="selectedComponent.option!.secondary" />
               </ElFormItem>
-              <ElFormItem label="速度秒">
+              <ElFormItem :label="bt('速度秒')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.speed"
                   :min="1"
@@ -1236,7 +1262,7 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="线宽">
+              <ElFormItem :label="bt('线宽')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.thickness"
                   :min="1"
@@ -1245,10 +1271,10 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="辉光">
+              <ElFormItem :label="bt('辉光')">
                 <ElSwitch v-model="selectedComponent.option!.glow" />
               </ElFormItem>
-              <ElFormItem label="透明度">
+              <ElFormItem :label="bt('透明度')">
                 <ElSlider
                   v-model="selectedComponent.option!.opacity"
                   :min="0.1"
@@ -1258,16 +1284,16 @@
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'decor-scanline'">
-              <ElFormItem label="方向">
+              <ElFormItem :label="bt('方向')">
                 <ElSelect v-model="selectedComponent.option!.direction">
-                  <ElOption label="横向" value="horizontal" />
-                  <ElOption label="纵向" value="vertical" />
+                  <ElOption :label="bt('横向')" value="horizontal" />
+                  <ElOption :label="bt('纵向')" value="vertical" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="强调色">
+              <ElFormItem :label="bt('强调色')">
                 <ElColorPicker v-model="selectedComponent.option!.accent" />
               </ElFormItem>
-              <ElFormItem label="速度秒">
+              <ElFormItem :label="bt('速度秒')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.speed"
                   :min="1"
@@ -1276,7 +1302,7 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="透明度">
+              <ElFormItem :label="bt('透明度')">
                 <ElSlider
                   v-model="selectedComponent.option!.opacity"
                   :min="0.1"
@@ -1286,48 +1312,48 @@
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'decor-title'">
-              <ElFormItem label="主标题">
+              <ElFormItem :label="bt('主标题')">
                 <ElInput v-model="selectedComponent.option!.text" />
               </ElFormItem>
-              <ElFormItem label="副标题">
+              <ElFormItem :label="bt('副标题')">
                 <ElInput v-model="selectedComponent.option!.subtitle" clearable />
               </ElFormItem>
-              <ElFormItem label="样式">
+              <ElFormItem :label="bt('样式')">
                 <ElSelect v-model="selectedComponent.option!.variant">
-                  <ElOption label="标题栏" value="bar" />
-                  <ElOption label="辉光" value="glow" />
-                  <ElOption label="括号" value="bracket" />
+                  <ElOption :label="bt('标题栏')" value="bar" />
+                  <ElOption :label="bt('辉光')" value="glow" />
+                  <ElOption :label="bt('括号')" value="bracket" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="对齐">
+              <ElFormItem :label="bt('对齐')">
                 <ElSelect v-model="selectedComponent.option!.align">
-                  <ElOption label="左对齐" value="left" />
-                  <ElOption label="居中" value="center" />
-                  <ElOption label="右对齐" value="right" />
+                  <ElOption :label="bt('左对齐')" value="left" />
+                  <ElOption :label="bt('居中')" value="center" />
+                  <ElOption :label="bt('右对齐')" value="right" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="强调色">
+              <ElFormItem :label="bt('强调色')">
                 <ElColorPicker v-model="selectedComponent.option!.accent" />
               </ElFormItem>
             </template>
             <template v-if="selectedComponent.type === 'decor-divider'">
-              <ElFormItem label="方向">
+              <ElFormItem :label="bt('方向')">
                 <ElSelect v-model="selectedComponent.option!.direction">
-                  <ElOption label="横向" value="horizontal" />
-                  <ElOption label="纵向" value="vertical" />
+                  <ElOption :label="bt('横向')" value="horizontal" />
+                  <ElOption :label="bt('纵向')" value="vertical" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="样式">
+              <ElFormItem :label="bt('样式')">
                 <ElSelect v-model="selectedComponent.option!.variant">
-                  <ElOption label="单线" value="line" />
-                  <ElOption label="双线" value="double" />
-                  <ElOption label="流光" value="pulse" />
+                  <ElOption :label="bt('单线')" value="line" />
+                  <ElOption :label="bt('双线')" value="double" />
+                  <ElOption :label="bt('流光')" value="pulse" />
                 </ElSelect>
               </ElFormItem>
-              <ElFormItem label="强调色">
+              <ElFormItem :label="bt('强调色')">
                 <ElColorPicker v-model="selectedComponent.option!.accent" />
               </ElFormItem>
-              <ElFormItem label="速度秒">
+              <ElFormItem :label="bt('速度秒')">
                 <ElInputNumber
                   v-model="selectedComponent.option!.speed"
                   :min="1"
@@ -1336,7 +1362,7 @@
                   step-strictly
                 />
               </ElFormItem>
-              <ElFormItem label="透明度">
+              <ElFormItem :label="bt('透明度')">
                 <ElSlider
                   v-model="selectedComponent.option!.opacity"
                   :min="0.1"
@@ -1347,107 +1373,130 @@
             </template>
             <ElFormItem>
               <ElSpace>
-                <ElButton @click="bringToFront">置顶</ElButton>
-                <ElButton @click="sendSelectedToBottom">置底</ElButton>
-                <ElButton type="danger" @click="removeSelected">删除</ElButton>
+                <ElButton @click="bringToFront">{{ bt('置顶') }}</ElButton>
+                <ElButton @click="sendSelectedToBottom">{{ bt('置底') }}</ElButton>
+                <ElButton type="danger" @click="removeSelected">{{ bt('删除') }}</ElButton>
               </ElSpace>
             </ElFormItem>
           </ElForm>
         </template>
         <template v-else-if="selectedComponents.length > 1">
-          <div class="panel-title">批量操作</div>
-          <ElText type="info" size="small"> 已选择 {{ selectedComponents.length }} 个组件 </ElText>
+          <div class="panel-title">{{ bt('批量操作') }}</div>
+          <ElText type="info" size="small">{{
+            bt('已选择 {p0} 个组件', { p0: selectedComponents.length })
+          }}</ElText>
           <ElSpace class="bulk-actions" direction="vertical" alignment="stretch">
             <div class="bulk-actions__section">
-              <ElText type="info" size="small">编组</ElText>
+              <ElText type="info" size="small">{{ bt('编组') }}</ElText>
               <div class="bulk-action-grid bulk-action-grid--two">
-                <ElButton size="small" :disabled="!canGroup" @click="groupSelected">组合</ElButton>
-                <ElButton size="small" :disabled="!canUngroup" @click="ungroupSelected">
-                  取消组合
-                </ElButton>
+                <ElButton size="small" :disabled="!canGroup" @click="groupSelected">{{
+                  bt('组合')
+                }}</ElButton>
+                <ElButton size="small" :disabled="!canUngroup" @click="ungroupSelected">{{
+                  bt('取消组合')
+                }}</ElButton>
               </div>
             </div>
             <div class="bulk-actions__section">
-              <ElText type="info" size="small">对齐</ElText>
+              <ElText type="info" size="small">{{ bt('对齐') }}</ElText>
               <div class="bulk-action-grid">
-                <ElButton size="small" @click="alignSelected('left')">左</ElButton>
-                <ElButton size="small" @click="alignSelected('center')">水平中</ElButton>
-                <ElButton size="small" @click="alignSelected('right')">右</ElButton>
-                <ElButton size="small" @click="alignSelected('top')">上</ElButton>
-                <ElButton size="small" @click="alignSelected('middle')">垂直中</ElButton>
-                <ElButton size="small" @click="alignSelected('bottom')">下</ElButton>
+                <ElButton size="small" @click="alignSelected('left')">{{ bt('左') }}</ElButton>
+                <ElButton size="small" @click="alignSelected('center')">{{
+                  bt('水平中')
+                }}</ElButton>
+                <ElButton size="small" @click="alignSelected('right')">{{ bt('右') }}</ElButton>
+                <ElButton size="small" @click="alignSelected('top')">{{ bt('上') }}</ElButton>
+                <ElButton size="small" @click="alignSelected('middle')">{{
+                  bt('垂直中')
+                }}</ElButton>
+                <ElButton size="small" @click="alignSelected('bottom')">{{ bt('下') }}</ElButton>
               </div>
             </div>
             <div class="bulk-actions__section">
-              <ElText type="info" size="small">分布</ElText>
+              <ElText type="info" size="small">{{ bt('分布') }}</ElText>
               <div class="bulk-action-grid">
                 <ElButton
                   size="small"
                   :disabled="selectedComponents.length < 3"
                   @click="distributeSelected('horizontal')"
+                  >{{ bt('水平') }}</ElButton
                 >
-                  水平
-                </ElButton>
                 <ElButton
                   size="small"
                   :disabled="selectedComponents.length < 3"
                   @click="distributeSelected('vertical')"
+                  >{{ bt('垂直') }}</ElButton
                 >
-                  垂直
-                </ElButton>
               </div>
             </div>
-            <ElButton @click="bringToFront">批量置顶</ElButton>
-            <ElButton @click="sendSelectedToBottom">批量置底</ElButton>
-            <ElButton type="danger" @click="removeSelected">批量删除</ElButton>
+            <ElButton @click="bringToFront">{{ bt('批量置顶') }}</ElButton>
+            <ElButton @click="sendSelectedToBottom">{{ bt('批量置底') }}</ElButton>
+            <ElButton type="danger" @click="removeSelected">{{ bt('批量删除') }}</ElButton>
           </ElSpace>
         </template>
         <template v-else>
-          <div class="panel-title">画布</div>
+          <div class="panel-title">{{ bt('画布') }}</div>
           <ElForm label-width="84px">
-            <ElFormItem label="宽度">
+            <ElFormItem :label="bt('宽度')">
               <ElInputNumber v-model="layout.canvas.width" :min="320" :max="7680" />
             </ElFormItem>
-            <ElFormItem label="高度">
+            <ElFormItem :label="bt('高度')">
               <ElInputNumber v-model="layout.canvas.height" :min="240" :max="4320" />
             </ElFormItem>
-            <ElFormItem label="背景色">
+            <ElFormItem :label="bt('背景色')">
               <ElColorPicker v-model="screen.bg_config.color" />
             </ElFormItem>
-            <ElFormItem label="主题">
-              <ElSegmented v-model="screen.bg_config.theme" :options="boardThemeOptions" />
+            <ElFormItem :label="bt('主题')">
+              <ElSegmented
+                v-model="screen.bg_config.theme"
+                :options="localizedOptions(boardThemeOptions)"
+              />
             </ElFormItem>
-            <ElFormItem label="背景图">
-              <ElInput v-model="screen.bg_config.image" clearable placeholder="图片 URL" />
+            <ElFormItem :label="bt('背景图')">
+              <ElInput v-model="screen.bg_config.image" clearable :placeholder="bt('图片 URL')" />
             </ElFormItem>
-            <ElFormItem label="图片适配">
+            <ElFormItem :label="bt('图片适配')">
               <ElSelect v-model="screen.bg_config.image_fit">
                 <ElOption
                   v-for="item in backgroundFitOptions"
                   :key="item.value"
-                  :label="item.label"
+                  :label="bt(item.label)"
                   :value="item.value"
                 />
               </ElSelect>
             </ElFormItem>
-            <ElFormItem label="适配模式">
-              <ElSegmented v-model="screen.bg_config.fit_mode" :options="fitModeOptions" />
+            <ElFormItem :label="bt('适配模式')">
+              <ElSegmented
+                v-model="screen.bg_config.fit_mode"
+                :options="localizedOptions(fitModeOptions)"
+              />
             </ElFormItem>
-            <ElFormItem label="显示对齐">
-              <ElSegmented v-model="screen.bg_config.fit_align" :options="boardFitAlignOptions" />
+            <ElFormItem :label="bt('显示对齐')">
+              <ElSegmented
+                v-model="screen.bg_config.fit_align"
+                :options="localizedOptions(boardFitAlignOptions)"
+              />
             </ElFormItem>
           </ElForm>
         </template>
       </aside>
     </div>
 
-    <ElDialog v-model="presetsVisible" title="预设模板" width="min(960px, 94vw)" destroy-on-close>
+    <ElDialog
+      v-model="presetsVisible"
+      :title="bt('预设模板')"
+      width="min(960px, 94vw)"
+      destroy-on-close
+    >
       <PresetGallery :type="presetType" @select="usePreset" />
     </ElDialog>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt, localizedOptions, locale } = useBoardI18n()
+
   import { playerUrl } from '../core/player-url'
   import EditorToolbar from './EditorToolbar.vue'
   import PresetGallery from '../presets/PresetGallery.vue'
@@ -1849,7 +1898,7 @@
   const addWidget = (type: string) => {
     const component = createDefaultComponent(type, layout.components.length) as BoardComponent
     if (layout.components.length >= 200) {
-      ElMessage.warning('最多支持 200 个组件')
+      ElMessage.warning(bt('最多支持 200 个组件'))
       return
     }
     component.rect.w = Math.min(component.rect.w, layout.canvas.width)
@@ -2157,7 +2206,7 @@
 
       return normalizeDatasetParams(parsed)
     } catch {
-      if (showError) ElMessage.error('查询参数必须是 JSON 对象')
+      if (showError) ElMessage.error(bt('查询参数必须是 JSON 对象'))
       return undefined
     }
   }
@@ -2417,7 +2466,7 @@
   const copySelected = () => {
     if (!selectedComponents.value.length) return
     copiedComponents.value = selectedComponents.value.map((component) => clonePlain(component))
-    ElMessage.success(`已复制 ${copiedComponents.value.length} 个组件`)
+    ElMessage.success(bt('已复制 {p0} 个组件', { p0: copiedComponents.value.length }))
   }
 
   const pasteCopied = async () => {
@@ -2447,9 +2496,13 @@
       await insertComponentTemplate(item)
     } else {
       try {
-        await ElMessageBox.confirm('套用预设将替换当前画布，可通过撤销恢复。', '套用预设模板', {
-          type: 'warning'
-        })
+        await ElMessageBox.confirm(
+          bt('套用预设将替换当前画布，可通过撤销恢复。'),
+          bt('套用预设模板'),
+          {
+            type: 'warning'
+          }
+        )
       } catch {
         return
       }
@@ -2461,11 +2514,11 @@
   const insertComponentTemplate = async (item: Preset) => {
     const components = presetComponents(item)
     if (!components.length) {
-      ElMessage.warning('模板没有可插入组件')
+      ElMessage.warning(bt('模板没有可插入组件'))
       return
     }
     if (layout.components.length + components.length > 200) {
-      ElMessage.warning('画布最多支持 200 个组件')
+      ElMessage.warning(bt('画布最多支持 200 个组件'))
       return
     }
     flushLayoutHistory()
@@ -2482,7 +2535,7 @@
     suppressHistory = false
     recordLayoutHistory()
     await Promise.all(nextComponents.map((component) => refreshComponentData(component)))
-    ElMessage.success('组件已插入')
+    ElMessage.success(bt('组件已插入'))
   }
 
   const applyScreenTemplate = async (item: Preset) => {
@@ -2502,7 +2555,7 @@
     await nextTick()
     updateAutoZoom()
     await refreshAllComponentData()
-    ElMessage.success('模板已套用')
+    ElMessage.success(bt('模板已套用'))
   }
 
   const presetComponents = (item: Preset): BoardComponent[] => {
@@ -2973,16 +3026,16 @@
       const file = input.files?.[0]
       if (!file) return
       try {
-        if (file.size > 2 * 1024 * 1024) throw new Error('布局文件不能超过 2 MB')
+        if (file.size > 2 * 1024 * 1024) throw new Error(bt('布局文件不能超过 2 MB'))
         const document = JSON.parse(await file.text())
         if (
           document.format !== 'boardstudio' ||
           document.version !== 1 ||
           !Array.isArray(document.layout?.components)
         )
-          throw new Error('不是 Board Studio v1 布局文件')
-        if (document.layout.components.length > 200) throw new Error('最多支持 200 个组件')
-        await ElMessageBox.confirm('导入将替换当前画布，之后可撤销。', '导入布局', {
+          throw new Error(bt('不是 Board Studio v1 布局文件'))
+        if (document.layout.components.length > 200) throw new Error(bt('最多支持 200 个组件'))
+        await ElMessageBox.confirm(bt('导入将替换当前画布，之后可撤销。'), bt('导入布局'), {
           type: 'warning'
         })
         flushLayoutHistory()
@@ -2993,10 +3046,10 @@
         restoreLayoutSnapshot(JSON.stringify(imported))
         layoutHistory.current = before
         recordLayoutHistory()
-        ElMessage.success('已导入，请重新绑定查询模板后保存')
+        ElMessage.success(bt('已导入，请重新绑定查询模板后保存'))
       } catch (error: any) {
         if (error !== 'cancel' && error !== 'close')
-          ElMessage.error(error?.message || '布局导入失败')
+          ElMessage.error(error?.message || bt('布局导入失败'))
       }
     }
     input.click()
@@ -3027,7 +3080,7 @@
   const saveLayout = () =>
     runWrite(async () => {
       await persistDraftLayout()
-      ElMessage.success('保存成功')
+      ElMessage.success(bt('保存成功'))
     })
 
   const openDraftPreview = () => {
@@ -3035,14 +3088,14 @@
     // Open in the click handler to avoid browser popup blocking after await.
     const preview = window.open('about:blank', '_blank')
     if (!preview) {
-      ElMessage.warning('请允许此站点打开预览窗口')
+      ElMessage.warning(bt('请允许此站点打开预览窗口'))
       return
     }
     preview.opener = null
     void runWrite(async () => {
       try {
         await persistDraftLayout()
-        const url = playerUrl(String(screen.code))
+        const url = playerUrl(String(screen.code), locale.value)
         url.searchParams.set('code', screen.code)
         url.searchParams.set('admin_preview', '1')
         url.searchParams.set('draft', '1')
@@ -3063,7 +3116,7 @@
       const savedRevision = await persistDraftLayout()
       await api.publish({ id: screen.id, revision: savedRevision })
       screen.status = 1
-      ElMessage.success(dirty.value ? '已发布保存的版本，当前还有新更改' : '发布成功')
+      ElMessage.success(dirty.value ? bt('已发布保存的版本，当前还有新更改') : bt('发布成功'))
     })
 
   const beforeUnload = (event: BeforeUnloadEvent) => {
@@ -3109,11 +3162,13 @@
   const confirmLeave = async () => {
     if (!dirty.value && !busy.value) return true
     if (busy.value) {
-      ElMessage.warning('正在保存，请稍候')
+      ElMessage.warning(bt('正在保存，请稍候'))
       return false
     }
     try {
-      await ElMessageBox.confirm('更改尚未保存，确定离开？', '未保存更改', { type: 'warning' })
+      await ElMessageBox.confirm(bt('更改尚未保存，确定离开？'), bt('未保存更改'), {
+        type: 'warning'
+      })
       return true
     } catch {
       return false
@@ -3412,7 +3467,8 @@
     overflow: auto;
     background:
       linear-gradient(45deg, rgb(255 255 255 / 4%) 25%, transparent 25%),
-      linear-gradient(-45deg, rgb(255 255 255 / 4%) 25%, transparent 25%), #111827;
+      linear-gradient(-45deg, rgb(255 255 255 / 4%) 25%, transparent 25%),
+      var(--el-fill-color-light);
     background-position:
       0 0,
       0 12px;
@@ -3434,7 +3490,7 @@
 
   :global(.boardstudio-selection-box) {
     position: absolute;
-    background: rgb(78 161 255 / 6%);
+    background: var(--el-color-primary-light-9);
     border: 1px dashed var(--el-color-primary);
   }
 

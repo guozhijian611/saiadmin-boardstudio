@@ -51,6 +51,8 @@
 
 import { echarts, type EChartsOption } from './echarts'
 import { computed } from 'vue'
+import { useChartTheme } from './theme'
+import { useBoardI18n } from '../i18n'
 
 import { getCssVar } from './ui'
 import type { BaseChartProps, ChartThemeConfig, UseChartOptions } from './types'
@@ -85,11 +87,12 @@ const RESIZE_DEBOUNCE_DELAY = 100
 export function useChart(options: UseChartOptions = {}) {
   const { initOptions, initDelay = 0, threshold = 0.1, autoTheme = true } = options
 
-  const isDark = computed(() => true)
+  const { bt, locale } = useBoardI18n()
   const menuOpen = computed(() => false)
   const menuType = computed(() => 'vertical')
 
   const chartRef = ref<HTMLElement>()
+  const { dark: isDark, revision: themeRevision } = useChartTheme(chartRef)
   let chart: echarts.ECharts | null = null
   let intersectionObserver: IntersectionObserver | null = null
   let pendingOptions: EChartsOption | null = null
@@ -167,7 +170,7 @@ export function useChart(options: UseChartOptions = {}) {
 
   const setupThemeWatcher = () => {
     if (autoTheme) {
-      themeStopHandle = watch(isDark, () => {
+      themeStopHandle = watch([isDark, themeRevision, locale], () => {
         // 更新空状态样式
         emptyStateManager.updateStyle()
 
@@ -469,7 +472,7 @@ export function useChart(options: UseChartOptions = {}) {
         background: transparent;
         z-index: 10;
       `
-      emptyStateDiv.innerHTML = `<span>暂无数据</span>`
+      emptyStateDiv.innerHTML = `<span>${bt('暂无数据')}</span>`
 
       // 确保父容器有相对定位
       if (
@@ -603,6 +606,8 @@ export function useChart(options: UseChartOptions = {}) {
 
   return {
     isDark,
+    themeRevision,
+    locale,
     chartRef,
     initChart,
     updateChart,
@@ -650,7 +655,7 @@ export function useChartComponent<T extends BaseChartProps>(options: UseChartCom
   } = options
 
   const chart = useChart(chartOptions)
-  const { chartRef, initChart, isDark, emptyStateManager } = chart
+  const { chartRef, initChart, isDark, themeRevision, locale, emptyStateManager } = chart
 
   // 检查是否为空数据
   const isEmpty = computed(() => {
@@ -697,7 +702,7 @@ export function useChartComponent<T extends BaseChartProps>(options: UseChartCom
     }
 
     // 监听主题变化
-    const themeStopHandle = watch(isDark, () => {
+    const themeStopHandle = watch([isDark, themeRevision, locale], () => {
       emptyStateManager.updateStyle()
       updateChart()
     })

@@ -1,8 +1,13 @@
-export function playerUrl(code: string) {
+export function playerUrl(code: string, locale = 'zh') {
   const base = new URL(import.meta.env.VITE_API_URL || '/', window.location.origin)
   base.pathname = base.pathname.replace(/\/$/, '') + '/app/boardstudio/player/'
   base.search = ''
   base.hash = ''
   base.searchParams.set('code', code)
+  base.searchParams.set('lang', locale)
+  base.searchParams.set(
+    'theme',
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  )
   return base
 }

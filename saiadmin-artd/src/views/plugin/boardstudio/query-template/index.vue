@@ -2,39 +2,41 @@
   <div class="art-full-height">
     <ElCard class="art-table-card" shadow="never">
       <ElForm :model="search" inline class="mb-4">
-        <ElFormItem label="名称"><ElInput v-model="search.name" clearable /></ElFormItem>
-        <ElFormItem label="数据源">
+        <ElFormItem :label="bt('名称')"><ElInput v-model="search.name" clearable /></ElFormItem>
+        <ElFormItem :label="bt('数据源')">
           <ElSelect v-model="search.datasource_id" clearable style="width: 180px">
             <ElOption
               v-for="item in datasourceOptions"
               :key="item.id"
-              :label="item.name"
+              :label="bt(item.name)"
               :value="item.id"
             />
           </ElSelect>
         </ElFormItem>
-        <ElFormItem><ElButton type="primary" @click="loadData">搜索</ElButton></ElFormItem>
+        <ElFormItem
+          ><ElButton type="primary" @click="loadData">{{ bt('搜索') }}</ElButton></ElFormItem
+        >
       </ElForm>
 
       <ArtTableHeader :loading="loading" @refresh="loadData">
         <template #left>
           <ElButton v-permission="'boardstudio:query_template:save'" @click="openDialog()">
-            <template #icon><ArtSvgIcon icon="ri:add-fill" /></template>
-            新增模板
-          </ElButton>
+            <template #icon><ArtSvgIcon icon="ri:add-fill" /></template
+            >{{ bt('新增模板') }}</ElButton
+          >
         </template>
       </ArtTableHeader>
 
       <ElTable v-loading="loading" :data="rows" row-key="id">
         <ElTableColumn prop="id" label="ID" width="90" />
-        <ElTableColumn prop="name" label="名称" min-width="180" />
-        <ElTableColumn label="数据源" min-width="160">
+        <ElTableColumn prop="name" :label="bt('名称')" min-width="180" />
+        <ElTableColumn :label="bt('数据源')" min-width="160">
           <template #default="{ row }">{{ datasourceName(row.datasource_id) }}</template>
         </ElTableColumn>
-        <ElTableColumn label="类型" width="150">
-          <template #default="{ row }">{{ datasetTypeLabel(row.dataset_type) }}</template>
+        <ElTableColumn :label="bt('类型')" width="150">
+          <template #default="{ row }">{{ bt(datasetTypeLabel(row.dataset_type)) }}</template>
         </ElTableColumn>
-        <ElTableColumn label="状态" width="110">
+        <ElTableColumn :label="bt('状态')" width="110">
           <template #default="{ row }">
             <ElSwitch
               v-permission="'boardstudio:query_template:changeStatus'"
@@ -45,16 +47,15 @@
             />
           </template>
         </ElTableColumn>
-        <ElTableColumn label="操作" width="170" fixed="right">
+        <ElTableColumn :label="bt('操作')" width="170" fixed="right">
           <template #default="{ row }">
             <ElSpace>
               <ElButton
                 v-permission="'boardstudio:query_template:preview'"
                 size="small"
                 @click="preview(row)"
+                >{{ bt('预览') }}</ElButton
               >
-                预览
-              </ElButton>
               <SaButton
                 v-permission="'boardstudio:query_template:update'"
                 type="secondary"
@@ -73,59 +74,59 @@
 
     <ElDialog
       v-model="dialogVisible"
-      :title="form.id ? '编辑查询模板' : '新增查询模板'"
+      :title="form.id ? bt('编辑查询模板') : bt('新增查询模板')"
       width="980px"
     >
       <ElForm ref="formRef" :model="form" :rules="rules" label-width="120px">
-        <ElFormItem label="名称" prop="name"><ElInput v-model="form.name" /></ElFormItem>
-        <ElFormItem label="数据源" prop="datasource_id">
+        <ElFormItem :label="bt('名称')" prop="name"><ElInput v-model="form.name" /></ElFormItem>
+        <ElFormItem :label="bt('数据源')" prop="datasource_id">
           <ElSelect v-model="form.datasource_id" style="width: 100%" @change="onDatasourceChange">
             <ElOption
               v-for="item in datasourceOptions"
               :key="item.id"
-              :label="item.name"
+              :label="bt(item.name)"
               :value="item.id"
             />
           </ElSelect>
         </ElFormItem>
-        <ElFormItem label="取数类型" prop="dataset_type">
+        <ElFormItem :label="bt('取数类型')" prop="dataset_type">
           <ElSelect v-model="form.dataset_type" style="width: 100%" @change="onDatasetTypeChange">
             <ElOption
               v-for="item in datasetTypeOptions"
               :key="item.value"
-              :label="item.label"
+              :label="bt(item.label)"
               :value="item.value"
             >
               <div class="dataset-type-option">
                 <div class="dataset-type-option__head">
-                  <span>{{ item.label }}</span>
+                  <span>{{ bt(item.label) }}</span>
                   <ElTag size="small" effect="plain">{{ item.value }}</ElTag>
                 </div>
-                <div class="dataset-type-option__summary">{{ item.summary }}</div>
+                <div class="dataset-type-option__summary">{{ bt(item.summary) }}</div>
               </div>
             </ElOption>
           </ElSelect>
         </ElFormItem>
         <div class="dataset-type-help">
           <div class="dataset-type-help__head">
-            <span>{{ datasetTypeHelp.label }}</span>
+            <span>{{ bt(datasetTypeHelp.label) }}</span>
             <ElTag size="small" effect="plain">{{ form.dataset_type }}</ElTag>
           </div>
-          <div class="dataset-type-help__summary">{{ datasetTypeHelp.description }}</div>
+          <div class="dataset-type-help__summary">{{ bt(datasetTypeHelp.description) }}</div>
           <div class="dataset-type-help__meta">
             <span>
-              <strong>返回结构</strong>
+              <strong>{{ bt('返回结构') }}</strong>
               {{ datasetTypeHelp.structure }}
             </span>
             <span>
-              <strong>适用组件</strong>
+              <strong>{{ bt('适用组件') }}</strong>
               {{ datasetTypeHelp.components }}
             </span>
           </div>
         </div>
 
         <template v-if="isMysqlTemplate">
-          <ElFormItem label="数据表">
+          <ElFormItem :label="bt('数据表')">
             <ElSelect
               v-model="form.config.table"
               filterable
@@ -136,13 +137,13 @@
               <ElOption
                 v-for="item in tableOptions"
                 :key="item.name"
-                :label="item.name"
+                :label="bt(item.name)"
                 :value="item.name"
               />
             </ElSelect>
           </ElFormItem>
 
-          <ElFormItem v-if="form.dataset_type === 'table_raw'" label="返回字段">
+          <ElFormItem v-if="form.dataset_type === 'table_raw'" :label="bt('返回字段')">
             <ElSelect
               v-model="form.config.fields"
               multiple
@@ -154,60 +155,64 @@
               <ElOption
                 v-for="item in columnOptions"
                 :key="item.name"
-                :label="`${item.name} (${item.type})`"
+                :label="bt(`${item.name} (${item.type})`)"
                 :value="item.name"
               />
             </ElSelect>
           </ElFormItem>
 
-          <ElFormItem v-if="form.dataset_type === 'table_raw'" label="字段别名">
+          <ElFormItem v-if="form.dataset_type === 'table_raw'" :label="bt('字段别名')">
             <div class="config-list">
               <div
                 v-for="(alias, index) in form.config.field_aliases"
                 :key="index"
                 class="alias-row"
               >
-                <ElSelect v-model="alias.field" filterable placeholder="字段">
+                <ElSelect v-model="alias.field" filterable :placeholder="bt('字段')">
                   <ElOption
                     v-for="item in aliasColumnOptions"
                     :key="item.name"
-                    :label="item.name"
+                    :label="bt(item.name)"
                     :value="item.name"
                   />
                 </ElSelect>
-                <ElInput v-model="alias.alias" placeholder="显示名，例如 订单号" />
-                <ElButton text type="danger" @click="removeFieldAlias(index)">删除</ElButton>
+                <ElInput v-model="alias.alias" :placeholder="bt('显示名，例如 订单号')" />
+                <ElButton text type="danger" @click="removeFieldAlias(index)">{{
+                  bt('删除')
+                }}</ElButton>
               </div>
               <ElButton @click="addFieldAlias">
-                <template #icon><ArtSvgIcon icon="ri:add-line" /></template>
-                添加别名
-              </ElButton>
+                <template #icon><ArtSvgIcon icon="ri:add-line" /></template
+                >{{ bt('添加别名') }}</ElButton
+              >
             </div>
           </ElFormItem>
 
-          <ElFormItem v-if="form.dataset_type === 'table_raw'" label="计算字段">
+          <ElFormItem v-if="form.dataset_type === 'table_raw'" :label="bt('计算字段')">
             <div class="config-list">
               <div
                 v-for="(item, index) in form.config.computed_fields"
                 :key="index"
                 class="computed-row"
               >
-                <ElInput v-model="item.alias" placeholder="字段名，例如 实付金额" />
+                <ElInput v-model="item.alias" :placeholder="bt('字段名，例如 实付金额')" />
                 <ElInput
                   v-model="item.expression"
-                  placeholder="表达式，例如 round(order_price * 1.2, 2)"
+                  :placeholder="bt('表达式，例如 round(order_price * 1.2, 2)')"
                 />
-                <ElButton text type="danger" @click="removeComputedField(index)">删除</ElButton>
+                <ElButton text type="danger" @click="removeComputedField(index)">{{
+                  bt('删除')
+                }}</ElButton>
               </div>
               <ElButton @click="addComputedField">
-                <template #icon><ArtSvgIcon icon="ri:add-line" /></template>
-                添加计算字段
-              </ElButton>
+                <template #icon><ArtSvgIcon icon="ri:add-line" /></template
+                >{{ bt('添加计算字段') }}</ElButton
+              >
             </div>
           </ElFormItem>
 
           <template v-if="form.dataset_type === 'table_aggregate'">
-            <ElFormItem label="维度字段">
+            <ElFormItem :label="bt('维度字段')">
               <ElSelect
                 v-model="form.config.dimension"
                 filterable
@@ -217,57 +222,57 @@
                 <ElOption
                   v-for="item in columnOptions"
                   :key="item.name"
-                  :label="`${item.name} (${item.type})`"
+                  :label="bt(`${item.name} (${item.type})`)"
                   :value="item.name"
                 />
               </ElSelect>
             </ElFormItem>
-            <ElFormItem label="维度粒度">
+            <ElFormItem :label="bt('维度粒度')">
               <ElSelect v-model="form.config.dimension_type" style="width: 100%">
-                <ElOption label="原始值" value="raw" />
-                <ElOption label="按日" value="day" />
-                <ElOption label="按月" value="month" />
-                <ElOption label="按年" value="year" />
+                <ElOption :label="bt('原始值')" value="raw" />
+                <ElOption :label="bt('按日')" value="day" />
+                <ElOption :label="bt('按月')" value="month" />
+                <ElOption :label="bt('按年')" value="year" />
               </ElSelect>
             </ElFormItem>
-            <ElFormItem label="第二维度">
+            <ElFormItem :label="bt('第二维度')">
               <ElSelect
                 v-model="form.config.secondary_dimension"
                 clearable
                 filterable
-                placeholder="可选，用于热力图 Y 轴"
+                :placeholder="bt('可选，用于热力图 Y 轴')"
                 style="width: 100%"
                 @change="onSecondaryDimensionChange"
               >
                 <ElOption
                   v-for="item in secondaryDimensionOptions"
                   :key="item.name"
-                  :label="`${item.name} (${item.type})`"
+                  :label="bt(`${item.name} (${item.type})`)"
                   :value="item.name"
                 />
               </ElSelect>
             </ElFormItem>
-            <ElFormItem v-if="form.config.secondary_dimension" label="第二粒度">
+            <ElFormItem v-if="form.config.secondary_dimension" :label="bt('第二粒度')">
               <ElSelect v-model="form.config.secondary_dimension_type" style="width: 100%">
-                <ElOption label="原始值" value="raw" />
-                <ElOption label="按日" value="day" />
-                <ElOption label="按月" value="month" />
-                <ElOption label="按年" value="year" />
+                <ElOption :label="bt('原始值')" value="raw" />
+                <ElOption :label="bt('按日')" value="day" />
+                <ElOption :label="bt('按月')" value="month" />
+                <ElOption :label="bt('按年')" value="year" />
               </ElSelect>
             </ElFormItem>
-            <ElFormItem label="聚合指标">
+            <ElFormItem :label="bt('聚合指标')">
               <div class="config-list">
                 <div v-for="(metric, index) in form.config.metrics" :key="index" class="metric-row">
-                  <ElInput v-model="metric.alias" placeholder="输出名，例如 订单金额" />
+                  <ElInput v-model="metric.alias" :placeholder="bt('输出名，例如 订单金额')" />
                   <ElSelect
                     v-model="metric.aggregate"
-                    placeholder="聚合方式"
+                    :placeholder="bt('聚合方式')"
                     @change="onMetricAggregateChange(metric)"
                   >
                     <ElOption
                       v-for="item in aggregateOptions"
                       :key="item.value"
-                      :label="item.label"
+                      :label="bt(item.label)"
                       :value="item.value"
                     />
                   </ElSelect>
@@ -275,276 +280,288 @@
                     v-if="metric.aggregate !== 'count'"
                     v-model="metric.field"
                     filterable
-                    placeholder="数值字段"
+                    :placeholder="bt('数值字段')"
                   >
                     <ElOption
                       v-for="item in numericColumnOptions"
                       :key="item.name"
-                      :label="`${item.name} (${item.type})`"
+                      :label="bt(`${item.name} (${item.type})`)"
                       :value="item.name"
                     />
                   </ElSelect>
                   <ElInput v-else model-value="COUNT(*)" disabled />
-                  <ElButton text type="danger" @click="removeAggregateMetric(index)">删除</ElButton>
+                  <ElButton text type="danger" @click="removeAggregateMetric(index)">{{
+                    bt('删除')
+                  }}</ElButton>
                 </div>
                 <ElButton @click="addAggregateMetric">
-                  <template #icon><ArtSvgIcon icon="ri:add-line" /></template>
-                  添加指标
-                </ElButton>
+                  <template #icon><ArtSvgIcon icon="ri:add-line" /></template
+                  >{{ bt('添加指标') }}</ElButton
+                >
               </div>
             </ElFormItem>
-            <ElFormItem label="排序">
+            <ElFormItem :label="bt('排序')">
               <ElSpace wrap>
                 <ElSelect v-model="form.config.order_by" style="width: 160px">
-                  <ElOption label="按维度" value="label" />
+                  <ElOption :label="bt('按维度')" value="label" />
                   <ElOption
                     v-if="form.config.secondary_dimension"
-                    label="按第二维度"
+                    :label="bt('按第二维度')"
                     value="series"
                   />
                   <ElOption
                     v-for="item in aggregateOrderOptions"
                     :key="item.value"
-                    :label="`按 ${item.label}`"
+                    :label="bt('按 {p0}', { p0: item.label })"
                     :value="item.value"
                   />
                 </ElSelect>
                 <ElSelect v-model="form.config.order_type" style="width: 140px">
-                  <ElOption label="升序" value="asc" />
-                  <ElOption label="降序" value="desc" />
+                  <ElOption :label="bt('升序')" value="asc" />
+                  <ElOption :label="bt('降序')" value="desc" />
                 </ElSelect>
               </ElSpace>
             </ElFormItem>
           </template>
 
-          <ElFormItem label="参数">
+          <ElFormItem :label="bt('参数')">
             <ElAlert
               class="param-help"
               type="info"
               show-icon
               :closable="false"
-              title="参数类型说明"
-              :description="paramTypeDescription"
+              :title="bt('参数类型说明')"
+              :description="bt(paramTypeDescription)"
             />
             <div class="config-list">
               <div v-for="(param, index) in form.config.params" :key="index" class="param-row">
-                <ElInput v-model="param.name" placeholder="参数名，例如 pay_method" />
-                <ElInput v-model="param.label" placeholder="显示名，例如 支付方式" />
+                <ElInput v-model="param.name" :placeholder="bt('参数名，例如 pay_method')" />
+                <ElInput v-model="param.label" :placeholder="bt('显示名，例如 支付方式')" />
                 <ElSelect
                   v-model="param.type"
-                  placeholder="类型"
+                  :placeholder="bt('类型')"
                   @change="onParamTypeChange(param)"
                 >
                   <ElOption
                     v-for="item in paramTypeOptions"
                     :key="item.value"
-                    :label="item.label"
+                    :label="bt(item.label)"
                     :value="item.value"
                   />
                 </ElSelect>
-                <ElInput v-model="param.default" :placeholder="paramDefaultPlaceholder(param)" />
+                <ElInput
+                  v-model="param.default"
+                  :placeholder="bt(paramDefaultPlaceholder(param))"
+                />
                 <ElSwitch
                   v-model="param.required"
                   inline-prompt
                   active-text="必填"
                   inactive-text="可空"
                 />
-                <ElButton text type="danger" @click="removeParam(index)">删除</ElButton>
+                <ElButton text type="danger" @click="removeParam(index)">{{ bt('删除') }}</ElButton>
               </div>
               <ElButton @click="addParam">
-                <template #icon><ArtSvgIcon icon="ri:add-line" /></template>
-                添加参数
-              </ElButton>
+                <template #icon><ArtSvgIcon icon="ri:add-line" /></template
+                >{{ bt('添加参数') }}</ElButton
+              >
             </div>
           </ElFormItem>
 
-          <ElFormItem label="条件">
+          <ElFormItem :label="bt('条件')">
             <div class="config-list">
               <template v-for="(condition, index) in form.config.conditions" :key="index">
                 <div v-if="isConditionGroup(condition)" class="condition-group">
                   <div class="condition-group__header">
                     <ElSpace>
-                      <span class="condition-group__title">条件组</span>
+                      <span class="condition-group__title">{{ bt('条件组') }}</span>
                       <ElSelect v-model="condition.logic" style="width: 130px">
                         <ElOption
                           v-for="item in conditionLogicOptions"
                           :key="item.value"
-                          :label="item.label"
+                          :label="bt(item.label)"
                           :value="item.value"
                         />
                       </ElSelect>
                     </ElSpace>
-                    <ElButton text type="danger" @click="removeCondition(index)">删除组</ElButton>
+                    <ElButton text type="danger" @click="removeCondition(index)">{{
+                      bt('删除组')
+                    }}</ElButton>
                   </div>
                   <div
                     v-for="(child, childIndex) in condition.conditions"
                     :key="childIndex"
                     class="config-row"
                   >
-                    <ElSelect v-model="child.field" filterable placeholder="字段">
+                    <ElSelect v-model="child.field" filterable :placeholder="bt('字段')">
                       <ElOption
                         v-for="item in conditionColumnOptions(child)"
                         :key="item.name"
-                        :label="item.name"
+                        :label="bt(item.name)"
                         :value="item.name"
                       />
                     </ElSelect>
                     <ElSelect
                       v-model="child.op"
-                      placeholder="操作符"
+                      :placeholder="bt('操作符')"
                       @change="onConditionOperatorChange(child)"
                     >
                       <ElOption
                         v-for="item in operatorOptions"
                         :key="item.value"
-                        :label="item.label"
+                        :label="bt(item.label)"
                         :value="item.value"
                       />
                     </ElSelect>
                     <ElSelect
                       v-if="child.op === 'time_range'"
                       v-model="child.value"
-                      placeholder="选择时间范围"
+                      :placeholder="bt('选择时间范围')"
                     >
                       <ElOption
                         v-for="item in timeRangeOptions"
                         :key="item.value"
-                        :label="item.label"
+                        :label="bt(item.label)"
                         :value="item.value"
                       />
                       <ElOption
                         v-for="item in timeRangeParamOptions"
                         :key="item.value"
-                        :label="item.label"
+                        :label="bt(item.label)"
                         :value="item.value"
                       />
                     </ElSelect>
                     <ElInput
                       v-else
                       v-model="child.value"
-                      placeholder="值或 :参数名，in/between 可用逗号分隔"
+                      :placeholder="bt('值或 :参数名，in/between 可用逗号分隔')"
                     />
                     <ElButton
                       text
                       type="danger"
                       @click="removeGroupCondition(condition, childIndex)"
+                      >{{ bt('删除') }}</ElButton
                     >
-                      删除
-                    </ElButton>
                   </div>
                   <ElButton @click="addGroupCondition(condition)">
-                    <template #icon><ArtSvgIcon icon="ri:add-line" /></template>
-                    组内条件
-                  </ElButton>
+                    <template #icon><ArtSvgIcon icon="ri:add-line" /></template
+                    >{{ bt('组内条件') }}</ElButton
+                  >
                 </div>
                 <div v-else class="config-row">
-                  <ElSelect v-model="condition.field" filterable placeholder="字段">
+                  <ElSelect v-model="condition.field" filterable :placeholder="bt('字段')">
                     <ElOption
                       v-for="item in conditionColumnOptions(condition)"
                       :key="item.name"
-                      :label="item.name"
+                      :label="bt(item.name)"
                       :value="item.name"
                     />
                   </ElSelect>
                   <ElSelect
                     v-model="condition.op"
-                    placeholder="操作符"
+                    :placeholder="bt('操作符')"
                     @change="onConditionOperatorChange(condition)"
                   >
                     <ElOption
                       v-for="item in operatorOptions"
                       :key="item.value"
-                      :label="item.label"
+                      :label="bt(item.label)"
                       :value="item.value"
                     />
                   </ElSelect>
                   <ElSelect
                     v-if="condition.op === 'time_range'"
                     v-model="condition.value"
-                    placeholder="选择时间范围"
+                    :placeholder="bt('选择时间范围')"
                   >
                     <ElOption
                       v-for="item in timeRangeOptions"
                       :key="item.value"
-                      :label="item.label"
+                      :label="bt(item.label)"
                       :value="item.value"
                     />
                     <ElOption
                       v-for="item in timeRangeParamOptions"
                       :key="item.value"
-                      :label="item.label"
+                      :label="bt(item.label)"
                       :value="item.value"
                     />
                   </ElSelect>
                   <ElInput
                     v-else
                     v-model="condition.value"
-                    placeholder="值或 :参数名，in/between 可用逗号分隔"
+                    :placeholder="bt('值或 :参数名，in/between 可用逗号分隔')"
                   />
-                  <ElButton text type="danger" @click="removeCondition(index)">删除</ElButton>
+                  <ElButton text type="danger" @click="removeCondition(index)">{{
+                    bt('删除')
+                  }}</ElButton>
                 </div>
               </template>
               <ElSpace wrap>
                 <ElButton @click="addCondition">
-                  <template #icon><ArtSvgIcon icon="ri:add-line" /></template>
-                  添加条件
-                </ElButton>
+                  <template #icon><ArtSvgIcon icon="ri:add-line" /></template
+                  >{{ bt('添加条件') }}</ElButton
+                >
                 <ElButton @click="addConditionGroup">
-                  <template #icon><ArtSvgIcon icon="ri:git-branch-line" /></template>
-                  添加条件组
-                </ElButton>
+                  <template #icon><ArtSvgIcon icon="ri:git-branch-line" /></template
+                  >{{ bt('添加条件组') }}</ElButton
+                >
               </ElSpace>
             </div>
           </ElFormItem>
 
-          <ElFormItem v-if="form.dataset_type === 'table_raw'" label="排序">
+          <ElFormItem v-if="form.dataset_type === 'table_raw'" :label="bt('排序')">
             <div class="config-list">
               <div v-for="(order, index) in form.config.order" :key="index" class="config-row">
-                <ElSelect v-model="order.field" filterable placeholder="字段">
+                <ElSelect v-model="order.field" filterable :placeholder="bt('字段')">
                   <ElOption
                     v-for="item in columnOptions"
                     :key="item.name"
-                    :label="item.name"
+                    :label="bt(item.name)"
                     :value="item.name"
                   />
                 </ElSelect>
-                <ElSelect v-model="order.direction" placeholder="方向">
-                  <ElOption label="升序" value="asc" />
-                  <ElOption label="降序" value="desc" />
+                <ElSelect v-model="order.direction" :placeholder="bt('方向')">
+                  <ElOption :label="bt('升序')" value="asc" />
+                  <ElOption :label="bt('降序')" value="desc" />
                 </ElSelect>
-                <ElButton text type="danger" @click="removeOrder(index)">删除</ElButton>
+                <ElButton text type="danger" @click="removeOrder(index)">{{ bt('删除') }}</ElButton>
               </div>
               <ElButton @click="addOrder">
-                <template #icon><ArtSvgIcon icon="ri:add-line" /></template>
-                添加排序
-              </ElButton>
+                <template #icon><ArtSvgIcon icon="ri:add-line" /></template
+                >{{ bt('添加排序') }}</ElButton
+              >
             </div>
           </ElFormItem>
 
-          <ElFormItem v-if="form.dataset_type !== 'table_count'" label="返回条数">
+          <ElFormItem v-if="form.dataset_type !== 'table_count'" :label="bt('返回条数')">
             <ElInputNumber v-model="form.config.limit" :min="1" :max="1000" />
           </ElFormItem>
         </template>
 
         <template v-else>
-          <ElFormItem label="请求方法">
+          <ElFormItem :label="bt('请求方法')">
             <ElRadioGroup v-model="form.config.method">
               <ElRadioButton label="GET">GET</ElRadioButton>
               <ElRadioButton label="POST">POST JSON</ElRadioButton>
             </ElRadioGroup>
           </ElFormItem>
-          <ElFormItem label="请求路径">
+          <ElFormItem :label="bt('请求路径')">
             <ElInput
               v-model="form.config.path"
-              placeholder="例如 /metrics/:tenant/orders，可留空直接请求数据源 URL"
+              :placeholder="bt('例如 /metrics/:tenant/orders，可留空直接请求数据源 URL')"
             />
           </ElFormItem>
-          <ElFormItem label="请求参数">
+          <ElFormItem :label="bt('请求参数')">
             <ElInput
               v-model="paramsText"
               type="textarea"
               :rows="6"
-              placeholder='例如 {"range":":range","tenant":":tenant"}'
+              :placeholder="
+                bt(
+                  '例如 {&quot;range&quot;:&quot;:range&quot;,&quot;tenant&quot;:&quot;:tenant&quot;}'
+                )
+              "
             />
           </ElFormItem>
           <ElFormItem v-if="form.config.method === 'POST'" label="JSON Body">
@@ -552,67 +569,75 @@
               v-model="bodyText"
               type="textarea"
               :rows="6"
-              placeholder='例如 {"range":":range","tenant":":tenant"}'
+              :placeholder="
+                bt(
+                  '例如 {&quot;range&quot;:&quot;:range&quot;,&quot;tenant&quot;:&quot;:tenant&quot;}'
+                )
+              "
             />
           </ElFormItem>
-          <ElFormItem label="预览参数">
+          <ElFormItem :label="bt('预览参数')">
             <ElInput
               v-model="previewParamsText"
               type="textarea"
               :rows="4"
-              placeholder='例如 {"range":"7d","tenant":"b8"}'
+              :placeholder="
+                bt('例如 {&quot;range&quot;:&quot;7d&quot;,&quot;tenant&quot;:&quot;b8&quot;}')
+              "
             />
           </ElFormItem>
-          <ElFormItem label="响应路径">
+          <ElFormItem :label="bt('响应路径')">
             <ElInput
               v-model="form.config.response_path"
               clearable
-              placeholder="例如 data.items，可留空自动识别 rows 或 data"
+              :placeholder="bt('例如 data.items，可留空自动识别 rows 或 data')"
             />
           </ElFormItem>
-          <ElFormItem label="总数路径">
+          <ElFormItem :label="bt('总数路径')">
             <ElInput
               v-model="form.config.total_path"
               clearable
-              placeholder="例如 data.total，可留空使用 total 或行数"
+              :placeholder="bt('例如 data.total，可留空使用 total 或行数')"
             />
           </ElFormItem>
         </template>
 
-        <ElFormItem label="配置预览">
+        <ElFormItem :label="bt('配置预览')">
           <ElInput :model-value="configPreview" type="textarea" :rows="8" readonly />
         </ElFormItem>
-        <ElFormItem label="状态">
+        <ElFormItem :label="bt('状态')">
           <ElRadioGroup v-model="form.status">
-            <ElRadioButton :label="1">启用</ElRadioButton>
-            <ElRadioButton :label="2">停用</ElRadioButton>
+            <ElRadioButton :label="bt(1)">{{ bt('启用') }}</ElRadioButton>
+            <ElRadioButton :label="bt(2)">{{ bt('停用') }}</ElRadioButton>
           </ElRadioGroup>
         </ElFormItem>
       </ElForm>
       <template #footer>
-        <ElButton @click="dialogVisible = false">取消</ElButton>
-        <ElButton v-permission="'boardstudio:query_template:preview'" @click="preview(form)"
-          >预览</ElButton
-        >
+        <ElButton @click="dialogVisible = false">{{ bt('取消') }}</ElButton>
+        <ElButton v-permission="'boardstudio:query_template:preview'" @click="preview(form)">{{
+          bt('预览')
+        }}</ElButton>
         <ElButton
           v-permission="
             form.id ? 'boardstudio:query_template:update' : 'boardstudio:query_template:save'
           "
           type="primary"
           @click="submit"
+          >{{ bt('提交') }}</ElButton
         >
-          提交
-        </ElButton>
       </template>
     </ElDialog>
 
-    <ElDialog v-model="previewVisible" title="预览结果" width="720px">
+    <ElDialog v-model="previewVisible" :title="bt('预览结果')" width="720px">
       <SaCode :code="previewText" language="json" />
     </ElDialog>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { ElMessage, ElMessageBox } from 'element-plus'
   import type { FormInstance, FormRules } from 'element-plus'
   import datasourceApi from '../api/datasource'
@@ -690,11 +715,11 @@
     status: 1
   })
 
-  const rules: FormRules = {
-    name: [{ required: true, message: '名称必填', trigger: 'blur' }],
-    datasource_id: [{ required: true, message: '数据源必选', trigger: 'change' }],
-    dataset_type: [{ required: true, message: '取数类型必选', trigger: 'change' }]
-  }
+  const rules = computed<FormRules>(() => ({
+    name: [{ required: true, message: bt('名称必填'), trigger: 'blur' }],
+    datasource_id: [{ required: true, message: bt('数据源必选'), trigger: 'change' }],
+    dataset_type: [{ required: true, message: bt('取数类型必选'), trigger: 'change' }]
+  }))
 
   const operatorOptions = [
     { label: '等于 =', value: '=' },
@@ -1024,7 +1049,7 @@
       if (config.secondary_dimension) {
         if (config.secondary_dimension === config.dimension) {
           if (strict) {
-            throw new Error('第二维度字段不能与维度字段相同')
+            throw new Error(bt('第二维度字段不能与维度字段相同'))
           }
           config.secondary_dimension = ''
         }
@@ -1056,7 +1081,7 @@
     } else {
       await api.save(payload)
     }
-    ElMessage.success('保存成功')
+    ElMessage.success(bt('保存成功'))
     dialogVisible.value = false
     loadData()
   }
@@ -1080,14 +1105,16 @@
 
   const changeStatus = async (row: any, status: number) => {
     await api.changeStatus({ id: row.id, status })
-    ElMessage.success('状态已更新')
+    ElMessage.success(bt('状态已更新'))
     loadData()
   }
 
   const deleteRow = async (row: any) => {
-    await ElMessageBox.confirm(`确定删除「${row.name}」吗？`, '删除查询模板', { type: 'warning' })
+    await ElMessageBox.confirm(bt('确定删除「{p0}」吗？', { p0: row.name }), bt('删除查询模板'), {
+      type: 'warning'
+    })
     await api.delete({ ids: [row.id] })
-    ElMessage.success('删除成功')
+    ElMessage.success(bt('删除成功'))
     loadData()
   }
 
@@ -1293,8 +1320,8 @@
       }))
       .filter((item) => (strict ? item.name : item.name || item.label || item.default))
     if (strict && items.length > 20) {
-      ElMessage.error('查询参数最多支持 20 个')
-      throw new Error('查询参数最多支持 20 个')
+      ElMessage.error(bt('查询参数最多支持 20 个'))
+      throw new Error(bt('查询参数最多支持 20 个'))
     }
 
     return items.slice(0, 20)
@@ -1445,7 +1472,7 @@
     if (path === '') return ''
     if (/^[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*$/.test(path)) return path
     if (strict) {
-      ElMessage.error(`${label}只能使用点号路径，例如 data.items`)
+      ElMessage.error(bt('{p0}只能使用点号路径，例如 data.items', { p0: label }))
       throw new Error(`${label}格式不正确`)
     }
     return ''
@@ -1460,7 +1487,7 @@
       return value
     } catch {
       if (strict) {
-        ElMessage.error(`${label}必须是 JSON 对象`)
+        ElMessage.error(bt('{p0}必须是 JSON 对象', { p0: label }))
         throw new Error(`${label}必须是 JSON 对象`)
       }
       return {}

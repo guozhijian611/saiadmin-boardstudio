@@ -9,6 +9,8 @@
 </template>
 
 <script setup lang="ts">
+  import { useBoardI18n } from '../../i18n'
+  const { bt } = useBoardI18n()
   import type { EChartsOption } from '../echarts'
   import { useChartOps, useChartComponent } from '../useChart'
   import type { FunnelChartProps } from '../types'
@@ -73,7 +75,7 @@
           legend: props.showLegend ? getLegendStyle(legendPosition) : undefined,
           series: [
             {
-              name: '漏斗',
+              name: bt('漏斗'),
               type: 'funnel',
               left: layout.left,
               top: layout.top,

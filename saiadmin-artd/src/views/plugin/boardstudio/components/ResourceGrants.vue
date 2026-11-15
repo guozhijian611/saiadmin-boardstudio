@@ -1,38 +1,45 @@
 <template>
   <ElButton size="small" @click="open">{{
-    resourceType === 'screen' ? '观看授权' : '授权'
+    resourceType === 'screen' ? bt('观看授权') : bt('授权')
   }}</ElButton>
-  <ElDialog v-model="visible" :title="title" width="660px" append-to-body>
+  <ElDialog v-model="visible" :title="bt(title)" width="660px" append-to-body>
     <p>{{ hint }}</p>
     <ElTable :data="items">
-      <ElTableColumn prop="subject_type" label="对象类型" /><ElTableColumn
+      <ElTableColumn prop="subject_type" :label="bt('对象类型')" /><ElTableColumn
         prop="subject_id"
-        label="对象 ID"
+        :label="bt('对象 ID')"
       />
-      <ElTableColumn prop="action" label="权限" /><ElTableColumn label="操作"
+      <ElTableColumn prop="action" :label="bt('权限')" /><ElTableColumn :label="bt('操作')"
         ><template #default="{ row }"
-          ><ElButton size="small" @click="save({ ...row, remove: true })">撤销</ElButton></template
+          ><ElButton size="small" @click="save({ ...row, remove: true })">{{
+            bt('撤销')
+          }}</ElButton></template
         ></ElTableColumn
       >
     </ElTable>
     <div class="grant-form">
-      <ElSelect v-model="form.subject_type" aria-label="授权对象类型"
-        ><ElOption value="user" label="用户" /><ElOption value="role" label="角色"
+      <ElSelect v-model="form.subject_type" :aria-label="bt('授权对象类型')"
+        ><ElOption value="user" :label="bt('用户')" /><ElOption value="role" :label="bt('角色')"
       /></ElSelect>
-      <ElInputNumber v-model="form.subject_id" :min="1" aria-label="用户或角色 ID" />
-      <ElSelect v-model="form.action" aria-label="资源权限"
+      <ElInputNumber v-model="form.subject_id" :min="1" :aria-label="bt('用户或角色 ID')" />
+      <ElSelect v-model="form.action" :aria-label="bt('资源权限')"
         ><ElOption
           v-for="action in actions"
           :key="action.value"
           :value="action.value"
-          :label="action.label"
+          :label="bt(action.label)"
       /></ElSelect>
-      <ElButton :loading="busy" type="primary" @click="save(form)">添加授权</ElButton>
+      <ElButton :loading="busy" type="primary" @click="save(form)">{{ bt('添加授权') }}</ElButton>
     </div>
-    <p>这里的资源权限还需要对应的 SaiAdmin 菜单/API 权限。管理权限包含该资源的全部操作。</p>
+    <p>{{
+      bt('这里的资源权限还需要对应的 SaiAdmin 菜单/API 权限。管理权限包含该资源的全部操作。')
+    }}</p>
   </ElDialog>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { computed, ref } from 'vue'
   import { ElMessage } from 'element-plus'
   import api from '../dataset/api'
@@ -77,7 +84,7 @@
       await load()
       visible.value = true
     } catch (e) {
-      ElMessage.error((e as Error).message)
+      ElMessage.error(bt((e as Error).message))
     }
   }
   async function save(value: Record<string, unknown>) {
@@ -89,9 +96,9 @@
         resource_id: props.resourceId
       })
       await load()
-      ElMessage.success('授权已更新')
+      ElMessage.success(bt('授权已更新'))
     } catch (e) {
-      ElMessage.error((e as Error).message)
+      ElMessage.error(bt((e as Error).message))
     } finally {
       busy.value = false
     }
@@ -108,6 +115,6 @@
   }
   p {
     font-size: 12px;
-    color: #64748b;
+    color: var(--el-text-color-secondary);
   }
 </style>

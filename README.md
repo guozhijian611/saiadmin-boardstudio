@@ -12,6 +12,7 @@
 
 ## 能做什么
 
+- **主题与语言**：后台控件跟随宿主明暗主题和主色，复用宿主中英文 locale；播放器链接携带界面语言。用户画布配色、标题和业务内容独立保留。
 - **布局与编辑**：嵌套自由布局 / Flex / Grid、结构树、拖动缩放、框选与多选、对齐等距、复制、锁定、原子撤销/重做。
 - **组件与预设**：图表、指标、表格和装饰组件；内置只读预设，支持筛选、整屏套用和组件组插入；JSON 导入/导出。
 - **数据分层**：数据源保管连接；版本化数据集定义查询；组件通过绑定实例和字段映射使用结果。支持 MySQL 只读参数 SQL、同源可视化关联与 HTTP GET/POST。
@@ -34,7 +35,20 @@ flowchart LR
 
 1. 在 [Releases](https://github.com/guozhijian611/saiadmin-boardstudio/releases) 下载 **`boardstudio-版本号.zip`** 和 `SHA256SUMS.txt`。GitHub 自动生成的 “Source code” 压缩包不是可直接导入的插件包。
 2. 在 SaiAdmin 的插件管理中上传 ZIP 并安装。
-3. 根据宿主提示安装前端依赖，再重新构建管理端；出现 **Board Studio** 菜单后进入大屏管理。
+3. 根据宿主提示安装前端依赖。在宿主 `saiadmin-artd/src/main.ts` 增加一次语言注册导入（放在应用挂载前），再重新构建管理端：
+
+   ```ts
+   import './views/plugin/boardstudio/i18n/host'
+   ```
+
+   宿主 6.1.5 的语言按钮默认会重建页面。为避免插件表单丢失，推荐直接运行随包提供的接入脚本，它会同时补齐上述导入和插件路由的刷新保护：
+
+   ```sh
+   # 在 SaiAdmin server 目录执行；先省略 --apply 查看变更
+   python3 plugin/boardstudio/bin/integrate-frontend.py --frontend ../saiadmin-artd --apply
+   ```
+
+   脚本保留原文件备份并可重复执行；不识别的宿主实现会拒绝修改，需按差异人工接入。该文件随 ZIP 提供，只合并 `boardstudio` 与 `menus.boardstudio` 命名空间，不覆盖宿主词条。宿主没有自动插件语言发现机制，菜单翻译需要此入口；页面本身仍会自动注册。出现 **Board Studio** 菜单后进入大屏管理。
 4. 新建大屏 → V2 设计器 → 套用预设或添加组件 → 保存 → 发布与访问。
 
 ```sh
@@ -58,7 +72,7 @@ shasum -a 256 -c SHA256SUMS.txt
 
 数据集默认轮询间隔 30 秒，可设 10–3600 秒；组件绑定可覆盖或只手动刷新。**缓存时间、轮询间隔、页面参数、图表动画是独立设置**，不会定时刷新整个浏览器页面。单次最多 5000 行 / 2 MiB / 100–10000ms。失败保留同查询上次成功值并标记过期，参数改变或权限失效会清空旧结果。
 
-完整安装、备份、凭据与 API 说明见 [插件手册](server/plugin/boardstudio/README.md)。
+主题与多语言的宿主接入及截图见 [适配说明](docs/theme-i18n.md)。完整安装、备份、凭据与 API 说明见 [插件手册](server/plugin/boardstudio/README.md)。
 
 ## 本地开发
 
@@ -70,9 +84,9 @@ node tools/boardstudio/verify.mjs
 node tools/boardstudio/build-player.mjs
 python3 tools/boardstudio/package.py \
   --skip-build \
-  --output dist/boardstudio-2.0.0.zip \
-  --source-output dist/boardstudio-source-2.0.0.zip
-python3 tools/boardstudio/check-package.py dist/boardstudio-2.0.0.zip
+  --output dist/boardstudio-2.1.0.zip \
+  --source-output dist/boardstudio-source-2.1.0.zip
+python3 tools/boardstudio/check-package.py dist/boardstudio-2.1.0.zip
 ```
 
 `verify.mjs` 运行核心 TypeScript 测试、PHP 纯逻辑测试及插件 ESLint；CI 另外对所有 PHP 文件做语法检查。独立构建仅生成播放器，管理端的 `@/utils/http`、用户状态和路由由宿主提供；本仓库不包含可独立启动的完整管理后台，也不将宿主类型检查冒充为插件单测。
@@ -96,9 +110,9 @@ VERSION                                    唯一发行版本号
 ```sh
 # 先修改 VERSION 并提交
 # 以下版本号仅为示例，不要重复使用已有标签
-git tag v2.1.0
+git tag v2.2.0
 git push origin main
-git push origin v2.1.0
+git push origin v2.2.0
 ```
 
 ## 边界

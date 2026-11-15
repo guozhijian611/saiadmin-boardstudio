@@ -10,6 +10,8 @@
 </template>
 
 <script setup lang="ts">
+  import { useBoardI18n } from '../../i18n'
+  const { bt } = useBoardI18n()
   import type { EChartsOption } from '../echarts'
   import { useChartOps, useChartComponent } from '../useChart'
   import type { RingChartProps } from '../types'
@@ -72,7 +74,7 @@
           legend: props.showLegend ? getLegendStyle(props.legendPosition) : undefined,
           series: [
             {
-              name: '数据占比',
+              name: bt('数据占比'),
               type: 'pie',
               radius: props.radius,
               center: getCenterPosition(),

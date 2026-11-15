@@ -1,31 +1,37 @@
 <template>
-  <ElButton type="success" @click="open">发布与访问</ElButton>
-  <ElDialog v-model="visible" title="发布与访问" width="720px">
-    <ElAlert v-if="dirty" title="请先保存当前文档，再发布。" type="warning" :closable="false" />
+  <ElButton type="success" @click="open">{{ bt('发布与访问') }}</ElButton>
+  <ElDialog v-model="visible" :title="bt('发布与访问')" width="720px">
+    <ElAlert
+      v-if="dirty"
+      :title="bt('请先保存当前文档，再发布。')"
+      type="warning"
+      :closable="false"
+    />
     <ElForm label-position="top">
-      <ElFormItem label="访问策略"
+      <ElFormItem :label="bt('访问策略')"
         ><ElRadioGroup v-model="mode"
-          ><ElRadio value="public">公开</ElRadio><ElRadio value="login">登录并获授权</ElRadio
-          ><ElRadio value="token">访问令牌</ElRadio></ElRadioGroup
+          ><ElRadio value="public">{{ bt('公开') }}</ElRadio
+          ><ElRadio value="login">{{ bt('登录并获授权') }}</ElRadio
+          ><ElRadio value="token">{{ bt('访问令牌') }}</ElRadio></ElRadioGroup
         ></ElFormItem
       >
       <ElAlert
         v-for="message in check.errors"
         :key="message"
-        :title="message"
+        :title="bt(message)"
         type="error"
         :closable="false"
       />
       <ElAlert
         v-for="message in check.warnings"
         :key="message"
-        :title="message"
+        :title="bt(message)"
         type="warning"
         :closable="false"
       />
-      <ElCheckbox v-if="check.warnings.length" v-model="acceptWarnings"
-        >我确认发布以上示例数据组件</ElCheckbox
-      >
+      <ElCheckbox v-if="check.warnings.length" v-model="acceptWarnings">{{
+        bt('我确认发布以上示例数据组件')
+      }}</ElCheckbox>
       <ElButton
         type="primary"
         :loading="busy"
@@ -37,47 +43,56 @@
           (check.warnings.length > 0 && !acceptWarnings)
         "
         @click="publish"
-        >发布已保存版本</ElButton
+        >{{ bt('发布已保存版本') }}</ElButton
       >
     </ElForm>
-    <p>播放地址：<a :href="url.toString()" target="_blank" rel="noopener">打开发布大屏</a></p>
+    <p
+      >{{ bt('播放地址：')
+      }}<a :href="url.toString()" target="_blank" rel="noopener">{{ bt('打开发布大屏') }}</a></p
+    >
     <template v-if="mode === 'token'">
-      <h4>访问令牌</h4>
-      <ElInput v-model="tokenName" placeholder="令牌名称" /><ElButton @click="createToken"
-        >创建令牌</ElButton
-      >
+      <h4>{{ bt('访问令牌') }}</h4>
+      <ElInput v-model="tokenName" :placeholder="bt('令牌名称')" /><ElButton @click="createToken">{{
+        bt('创建令牌')
+      }}</ElButton>
       <p v-if="shareLink"
-        >请保存本次链接，完整令牌只显示一次：<ElInput :model-value="shareLink" readonly
+        >{{ bt('请保存本次链接，完整令牌只显示一次：') }}<ElInput :model-value="shareLink" readonly
       /></p>
       <ElTable :data="tokens" size="small"
-        ><ElTableColumn prop="name" label="名称" /><ElTableColumn
+        ><ElTableColumn prop="name" :label="bt('名称')" /><ElTableColumn
           prop="token_prefix"
-          label="前缀"
-        /><ElTableColumn prop="status" label="状态" /><ElTableColumn label="操作"
+          :label="bt('前缀')"
+        /><ElTableColumn prop="status" :label="bt('状态')" /><ElTableColumn :label="bt('操作')"
           ><template #default="{ row }"
-            ><ElButton size="small" @click="disableToken(row.id)">停用</ElButton></template
+            ><ElButton size="small" @click="disableToken(row.id)">{{
+              bt('停用')
+            }}</ElButton></template
           ></ElTableColumn
         ></ElTable
       >
     </template>
     <ResourceGrants v-if="mode === 'login'" resource-type="screen" :resource-id="screenId" />
-    <h4>发布历史</h4>
+    <h4>{{ bt('发布历史') }}</h4>
     <ElTable :data="releases" size="small"
-      ><ElTableColumn prop="id" label="版本 ID" /><ElTableColumn
+      ><ElTableColumn prop="id" :label="bt('版本 ID')" /><ElTableColumn
         prop="create_time"
-        label="发布时间"
-      /><ElTableColumn label="操作"
+        :formatter="dateCell"
+        :label="bt('发布时间')"
+      /><ElTableColumn :label="bt('操作')"
         ><template #default="{ row }"
-          ><ElButton size="small" :disabled="dirty" @click="activate(row.id)"
-            >切换到此版本</ElButton
-          ></template
+          ><ElButton size="small" :disabled="dirty" @click="activate(row.id)">{{
+            bt('切换到此版本')
+          }}</ElButton></template
         ></ElTableColumn
       ></ElTable
     >
-    <p>切换发布版本不覆盖编辑草稿。公开播放不会返回 SQL、连接密码或 HTTP 密钥。</p>
+    <p>{{ bt('切换发布版本不覆盖编辑草稿。公开播放不会返回 SQL、连接密码或 HTTP 密钥。') }}</p>
   </ElDialog>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt, locale, dateCell } = useBoardI18n()
+
   import { computed, ref } from 'vue'
   import { ElMessage } from 'element-plus'
   import request from '@/utils/http'
@@ -99,6 +114,11 @@
   const url = computed(() => {
     const value = playerUrl(props.code)
     value.searchParams.set('v', '2')
+    value.searchParams.set('lang', locale.value)
+    value.searchParams.set(
+      'theme',
+      document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+    )
     return value
   })
   async function refresh() {
@@ -148,7 +168,7 @@
       })
       emit('revision', result.revision)
       await refresh()
-      ElMessage.success('发布成功')
+      ElMessage.success(bt('发布成功'))
     } finally {
       busy.value = false
     }
@@ -159,7 +179,7 @@
       data: { id: props.screenId, releaseId, revision: props.revision }
     })
     emit('revision', result.revision)
-    ElMessage.success('已切换发布版本')
+    ElMessage.success(bt('已切换发布版本'))
   }
   async function createToken() {
     const result = await screenApi.createToken({ id: props.screenId, name: tokenName.value })
@@ -171,7 +191,7 @@
   async function disableToken(tokenId: number) {
     await screenApi.changeTokenStatus({ id: props.screenId, token_id: tokenId, status: 2 })
     await refresh()
-    ElMessage.success('令牌已停用')
+    ElMessage.success(bt('令牌已停用'))
   }
 </script>
 <style scoped>

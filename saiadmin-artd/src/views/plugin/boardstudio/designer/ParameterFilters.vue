@@ -7,20 +7,24 @@
     <label v-for="(definition, name) in document.parameters" :key="name"
       >{{ name }}
       <select v-if="definition.type === 'boolean'" v-model="values[name]"
-        ><option :value="true">是</option
-        ><option :value="false">否</option></select
+        ><option :value="true">{{ bt('是') }}</option
+        ><option :value="false">{{ bt('否') }}</option></select
       >
       <input
         v-else
         v-model="values[name]"
         :type="definition.type === 'number' ? 'number' : 'text'"
-        :aria-label="`筛选 ${name}`"
+        :aria-label="bt('筛选 {p0}', { p0: name })"
       />
     </label>
-    <button type="submit">应用筛选</button><span role="alert">{{ error }}</span>
+    <button type="submit">{{ bt('应用筛选') }}</button
+    ><span role="alert">{{ bt(error) }}</span>
   </form>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { reactive, ref, watch } from 'vue'
   import type { BoardDocument } from '../document/types'
   import { resolvePageParameters } from '../document/parameters'
@@ -51,8 +55,8 @@
     align-items: center;
     gap: 12px;
     padding: 8px 16px;
-    background: #142238;
-    color: #edf5ff;
+    background: var(--el-bg-color-overlay);
+    color: var(--el-text-color-primary);
     font-size: 13px;
     flex-wrap: wrap;
   }
@@ -64,20 +68,20 @@
   .parameter-filters input,
   .parameter-filters select {
     width: 130px;
-    color: #111;
-    background: #fff;
-    border: 1px solid #96a9c2;
+    color: var(--el-text-color-primary);
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color);
     border-radius: 4px;
     padding: 4px;
   }
   .parameter-filters button {
     padding: 4px 12px;
-    color: #111;
-    background: #eef4ff;
-    border: 1px solid #96a9c2;
+    color: var(--el-text-color-primary);
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color);
     border-radius: 4px;
   }
   .parameter-filters span {
-    color: #fba;
+    color: var(--el-color-danger);
   }
 </style>

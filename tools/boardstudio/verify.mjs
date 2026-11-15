@@ -3,7 +3,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 for (const [command, args] of [
-  [path.join(root, 'saiadmin-artd/node_modules/.bin/tsx'), ['--test', 'tools/boardstudio/tests/core.test.ts', 'tools/boardstudio/tests/document.test.ts']],
+  [path.join(root, 'saiadmin-artd/node_modules/.bin/tsx'), ['--test', 'tools/boardstudio/tests/core.test.ts', 'tools/boardstudio/tests/document.test.ts', 'tools/boardstudio/tests/i18n.test.ts']],
+  ['python3', ['tools/boardstudio/tests/integration_cli.py']],
   ['php', ['-d', 'zend.assertions=1', 'tools/boardstudio/tests/layout.php']],
   ['php', ['-d', 'zend.assertions=1', 'tools/boardstudio/tests/document.php']],
   ['php', ['-d', 'zend.assertions=1', 'tools/boardstudio/tests/dataset.php']],

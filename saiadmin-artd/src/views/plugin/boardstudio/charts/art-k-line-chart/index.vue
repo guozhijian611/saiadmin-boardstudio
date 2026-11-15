@@ -9,6 +9,8 @@
 </template>
 
 <script setup lang="ts">
+  import { useBoardI18n } from '../../i18n'
+  const { bt } = useBoardI18n()
   import type { EChartsOption } from '../echarts'
   import { useChartOps, useChartComponent } from '../useChart'
   import type { KLineChartProps } from '../types'
@@ -86,11 +88,11 @@
             const data = param.data
             return `
               <div style="padding: 5px;">
-                <div><strong>时间：</strong>${param.name}</div>
-                <div><strong>开盘：</strong>${data[0]}</div>
-                <div><strong>收盘：</strong>${data[1]}</div>
-                <div><strong>最低：</strong>${data[2]}</div>
-                <div><strong>最高：</strong>${data[3]}</div>
+                <div><strong>${bt('时间：')}</strong>${param.name}</div>
+                <div><strong>${bt('开盘：')}</strong>${data[0]}</div>
+                <div><strong>${bt('收盘：')}</strong>${data[1]}</div>
+                <div><strong>${bt('最低：')}</strong>${data[2]}</div>
+                <div><strong>${bt('最高：')}</strong>${data[3]}</div>
               </div>
             `
           }

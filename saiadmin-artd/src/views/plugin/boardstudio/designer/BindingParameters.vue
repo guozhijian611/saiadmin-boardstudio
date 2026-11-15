@@ -1,32 +1,32 @@
 <template>
   <div class="binding-parameters">
-    <p v-if="!Object.keys(definitions).length">此数据集没有查询参数。</p>
+    <p v-if="!Object.keys(definitions).length">{{ bt('此数据集没有查询参数。') }}</p>
     <div v-for="(definition, name) in definitions" :key="name" class="parameter">
       <label
         >{{ name }}
-        <small>{{ definition.type }}{{ definition.required ? ' · 必填' : '' }}</small></label
+        <small>{{ definition.type }}{{ definition.required ? bt(' · 必填') : '' }}</small></label
       >
       <ElSelect
         :model-value="mode(name)"
-        :aria-label="`${name} 参数来源`"
+        :aria-label="bt('{p0} 参数来源', { p0: name })"
         @change="setMode(name, $event)"
       >
-        <ElOption value="default" label="数据集默认值" /><ElOption
+        <ElOption value="default" :label="bt('数据集默认值')" /><ElOption
           value="literal"
-          label="固定值"
-        /><ElOption value="page" label="页面参数" />
+          :label="bt('固定值')"
+        /><ElOption value="page" :label="bt('页面参数')" />
       </ElSelect>
       <ElSelect
         v-if="mode(name) === 'page'"
         :model-value="reference(name)"
-        :aria-label="`${name} 页面参数`"
+        :aria-label="bt('{p0} 页面参数', { p0: name })"
         @change="set(name, { pageParameter: $event })"
       >
         <ElOption
           v-for="(p, key) in compatible(definition.type)"
           :key="key"
           :value="key"
-          :label="key"
+          :label="bt(key)"
         />
       </ElSelect>
       <template v-else-if="mode(name) === 'literal'">
@@ -34,27 +34,30 @@
           v-if="definition.type === 'number'"
           type="number"
           :value="modelValue[name] ?? ''"
-          :aria-label="`${name} 固定值`"
+          :aria-label="bt('{p0} 固定值', { p0: name })"
           @input="setNumber(name, $event)"
         />
         <ElSwitch
           v-else-if="definition.type === 'boolean'"
           :model-value="modelValue[name] === true"
-          :aria-label="`${name} 固定值`"
+          :aria-label="bt('{p0} 固定值', { p0: name })"
           @update:model-value="set(name, $event)"
         />
         <ElInput
           v-else
           :model-value="String(modelValue[name] ?? '')"
-          :aria-label="`${name} 固定值`"
+          :aria-label="bt('{p0} 固定值', { p0: name })"
           @update:model-value="set(name, $event)"
         />
       </template>
-      <small v-else>默认：{{ definition.default ?? '未设置' }}</small>
+      <small v-else>{{ bt('默认：{p0}', { p0: definition.default ?? '未设置' }) }}</small>
     </div>
   </div>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import type { ParameterDefinition } from '../dataset/types'
   import type { BoardDocument } from '../document/types'
   const props = defineProps<{
@@ -104,17 +107,17 @@
     margin: 12px 0;
   }
   .parameter small {
-    color: #64748b;
+    color: var(--el-text-color-secondary);
   }
   .parameter label {
     font-size: 12px;
   }
   .parameter input {
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--el-border-color);
     border-radius: 4px;
     padding: 6px;
-    color: #1e293b;
-    background: white;
+    color: var(--el-text-color-primary);
+    background: var(--el-bg-color);
     width: 100%;
     box-sizing: border-box;
   }

@@ -1,25 +1,31 @@
 <template>
   <div class="datasets">
     <div class="dataset-heading"
-      ><div><h2>数据集</h2><p>保存可复用的查询定义，让多个组件使用同一批结果。</p></div
-      ><ElButton type="primary" @click="create">新建数据集</ElButton></div
+      ><div
+        ><h2>{{ bt('数据集') }}</h2
+        ><p>{{ bt('保存可复用的查询定义，让多个组件使用同一批结果。') }}</p></div
+      ><ElButton type="primary" @click="create">{{ bt('新建数据集') }}</ElButton></div
     >
     <ElTable :data="items" v-loading="loading">
-      <ElTableColumn prop="name" label="名称" /><ElTableColumn prop="id" label="ID" width="80" />
-      <ElTableColumn label="模式"
+      <ElTableColumn prop="name" :label="bt('名称')" /><ElTableColumn
+        prop="id"
+        label="ID"
+        width="80"
+      />
+      <ElTableColumn :label="bt('模式')"
         ><template #default="{ row }">{{
-          labels[row.definition.mode as keyof typeof labels]
+          bt(labels[row.definition.mode as keyof typeof labels])
         }}</template></ElTableColumn
       >
-      <ElTableColumn prop="revision" label="版本" width="80" />
-      <ElTableColumn label="刷新 / 缓存"
+      <ElTableColumn prop="revision" :label="bt('版本')" width="80" />
+      <ElTableColumn :label="bt('刷新 / 缓存')"
         ><template #default="{ row }"
           >{{ row.definition.refreshSeconds }}s / {{ row.definition.cacheSeconds }}s</template
         ></ElTableColumn
       >
-      <ElTableColumn label="操作" width="220"
+      <ElTableColumn :label="bt('操作')" width="220"
         ><template #default="{ row }"
-          ><ElButton size="small" @click="edit(row as DatasetRecord)">编辑</ElButton
+          ><ElButton size="small" @click="edit(row as DatasetRecord)">{{ bt('编辑') }}</ElButton
           ><ResourceGrants
             v-if="row.permissions?.manage"
             resource-type="dataset"
@@ -28,31 +34,32 @@
     </ElTable>
     <ElDialog
       v-model="visible"
-      :title="form.id ? '编辑数据集' : '新建数据集'"
+      :title="form.id ? bt('编辑数据集') : bt('新建数据集')"
       width="min(1050px,95vw)"
       destroy-on-close
     >
       <ElForm label-position="top">
         <div class="query-row"
-          ><ElFormItem label="名称"><ElInput v-model="form.name" maxlength="60" /></ElFormItem
-          ><ElFormItem label="数据源"
+          ><ElFormItem :label="bt('名称')"
+            ><ElInput v-model="form.name" maxlength="60" /></ElFormItem
+          ><ElFormItem :label="bt('数据源')"
             ><ElSelect v-model="form.datasource_id" @change="changeSource"
               ><ElOption
                 v-for="source in sources"
                 :key="source.id"
-                :label="source.name"
+                :label="bt(source.name)"
                 :value="source.id" /></ElSelect></ElFormItem
-          ><ElFormItem label="查询方式"
+          ><ElFormItem :label="bt('查询方式')"
             ><ElSelect v-model="form.definition.mode" @change="changeMode"
               ><ElOption
                 v-for="(label, mode) in labels"
                 v-show="mode !== 'legacy'"
                 :key="mode"
-                :label="label"
+                :label="bt(label)"
                 :value="mode" /></ElSelect></ElFormItem
         ></div>
         <ElTabs v-model="tab">
-          <ElTabPane label="取数配置" name="query">
+          <ElTabPane :label="bt('取数配置')" name="query">
             <VisualQuery
               v-if="form.definition.mode === 'visual'"
               :model-value="form.definition.query"
@@ -61,7 +68,7 @@
             />
             <template v-else-if="form.definition.mode === 'sql'"
               ><ElAlert
-                title="只读参数化 SELECT；参数使用 :name。关联查询须核对统计口径。"
+                :title="bt('只读参数化 SELECT；参数使用 :name。关联查询须核对统计口径。')"
                 :closable="false" /><ElInput
                 v-model="form.definition.query.sql"
                 type="textarea"
@@ -69,165 +76,187 @@
                 placeholder="SELECT COUNT(*) AS total FROM orders WHERE region = :region"
             /></template>
             <template v-else-if="form.definition.mode === 'http'">
-              <ElFormItem label="接口路径"
+              <ElFormItem :label="bt('接口路径')"
                 ><ElInput v-model="form.definition.query.path" placeholder="/statistics/orders"
               /></ElFormItem>
-              <ElFormItem label="请求方法"
+              <ElFormItem :label="bt('请求方法')"
                 ><ElSelect v-model="form.definition.query.method"
                   ><ElOption value="GET" /><ElOption value="POST" /></ElSelect
               ></ElFormItem>
-              <ElFormItem label="查询参数 JSON"
+              <ElFormItem :label="bt('查询参数 JSON')"
                 ><ElInput
                   v-model="httpParams"
                   type="textarea"
                   :rows="3"
                   placeholder='{"region":":region"}'
               /></ElFormItem>
-              <ElFormItem v-if="form.definition.query.method === 'POST'" label="请求体 JSON"
+              <ElFormItem v-if="form.definition.query.method === 'POST'" :label="bt('请求体 JSON')"
                 ><ElInput v-model="httpBody" type="textarea" :rows="3"
               /></ElFormItem>
-              <ElFormItem label="结果数组路径"
+              <ElFormItem :label="bt('结果数组路径')"
                 ><ElInput v-model="form.definition.query.response_path" placeholder="data.records"
               /></ElFormItem>
             </template>
             <ElAlert
               v-else
-              title="这是导入的旧版定义，可执行使用；需要修改时新建 V2 数据集。"
+              :title="bt('这是导入的旧版定义，可执行使用；需要修改时新建 V2 数据集。')"
               type="info"
               :closable="false"
             />
           </ElTabPane>
-          <ElTabPane label="输出字段" name="fields">
+          <ElTabPane :label="bt('输出字段')" name="fields">
             <ElAlert
-              title="声明字段会随数据集版本保存；执行时检查缺失、空值与类型，并只输出声明字段。留空则兼容自动推断。"
+              :title="
+                bt(
+                  '声明字段会随数据集版本保存；执行时检查缺失、空值与类型，并只输出声明字段。留空则兼容自动推断。'
+                )
+              "
               :closable="false"
             />
             <div class="query-row" v-for="(field, index) in form.definition.fields" :key="index">
               <ElInput
                 v-model="field.name"
-                placeholder="字段名，如 total"
-                aria-label="输出字段名"
+                :placeholder="bt('字段名，如 total')"
+                :aria-label="bt('输出字段名')"
               />
-              <ElInput v-model="field.label" placeholder="显示名称" aria-label="输出字段标题" />
-              <ElSelect v-model="field.type" aria-label="输出字段类型"
-                ><ElOption value="string" label="文本" /><ElOption
+              <ElInput
+                v-model="field.label"
+                :placeholder="bt('显示名称')"
+                :aria-label="bt('输出字段标题')"
+              />
+              <ElSelect v-model="field.type" :aria-label="bt('输出字段类型')"
+                ><ElOption value="string" :label="bt('文本')" /><ElOption
                   value="number"
-                  label="数字" /><ElOption value="boolean" label="布尔" /><ElOption
+                  :label="bt('数字')" /><ElOption value="boolean" :label="bt('布尔')" /><ElOption
                   value="object"
-                  label="对象或数组"
+                  :label="bt('对象或数组')"
               /></ElSelect>
-              <ElCheckbox v-model="field.nullable">允许为空</ElCheckbox>
-              <ElButton @click="form.definition.fields?.splice(index, 1)">删除字段</ElButton>
+              <ElCheckbox v-model="field.nullable">{{ bt('允许为空') }}</ElCheckbox>
+              <ElButton @click="form.definition.fields?.splice(index, 1)">{{
+                bt('删除字段')
+              }}</ElButton>
             </div>
-            <ElButton @click="addField">添加字段</ElButton>
-            <ElButton :disabled="!result?.fields?.length" @click="captureFields"
-              >使用预览字段</ElButton
-            >
-            <p
-              >空结果仍会返回声明的字段。数据库 DECIMAL
-              数字字符串保留原精度；订单号等标识字段请选择文本。</p
-            >
+            <ElButton @click="addField">{{ bt('添加字段') }}</ElButton>
+            <ElButton :disabled="!result?.fields?.length" @click="captureFields">{{
+              bt('使用预览字段')
+            }}</ElButton>
+            <p>{{
+              bt(
+                '空结果仍会返回声明的字段。数据库 DECIMAL 数字字符串保留原精度；订单号等标识字段请选择文本。'
+              )
+            }}</p>
           </ElTabPane>
-          <ElTabPane label="参数" name="params">
+          <ElTabPane :label="bt('参数')" name="params">
             <div class="query-row" v-for="(parameter, index) in parameterRows" :key="index"
-              ><ElInput v-model="parameter.name" placeholder="参数名" /><ElSelect
+              ><ElInput v-model="parameter.name" :placeholder="bt('参数名')" /><ElSelect
                 v-model="parameter.type"
-                ><ElOption value="string" label="文本" /><ElOption
+                ><ElOption value="string" :label="bt('文本')" /><ElOption
                   value="number"
-                  label="数字" /><ElOption value="boolean" label="布尔" /></ElSelect
-              ><ElInput v-model="parameter.default" placeholder="默认值" /><ElCheckbox
+                  :label="bt('数字')" /><ElOption value="boolean" :label="bt('布尔')" /></ElSelect
+              ><ElInput v-model="parameter.default" :placeholder="bt('默认值')" /><ElCheckbox
                 v-model="parameter.required"
-                >必填</ElCheckbox
-              ><ElButton @click="parameterRows.splice(index, 1)">删除</ElButton></div
+                >{{ bt('必填') }}</ElCheckbox
+              ><ElButton @click="parameterRows.splice(index, 1)">{{ bt('删除') }}</ElButton></div
             >
             <ElButton
               @click="
                 parameterRows.push({ name: '', type: 'string', default: '', required: false })
               "
-              >添加参数</ElButton
+              >{{ bt('添加参数') }}</ElButton
             >
           </ElTabPane>
-          <ElTabPane label="数据范围" name="scope">
-            <ElFormItem label="范围策略"
+          <ElTabPane :label="bt('数据范围')" name="scope">
+            <ElFormItem :label="bt('范围策略')"
               ><ElSelect v-model="scope.mode"
-                ><ElOption value="shared" label="所有获授权观看者共享结果" /><ElOption
+                ><ElOption value="shared" :label="bt('所有获授权观看者共享结果')" /><ElOption
                   value="viewer"
-                  label="按登录观看者筛选行" /></ElSelect
+                  :label="bt('按登录观看者筛选行')" /></ElSelect
             ></ElFormItem>
             <template v-if="scope.mode === 'viewer'">
               <ElAlert
-                title="服务器会在聚合前强制叠加范围条件；普通筛选不能覆盖。此数据集只能用于登录大屏。"
+                :title="
+                  bt(
+                    '服务器会在聚合前强制叠加范围条件；普通筛选不能覆盖。此数据集只能用于登录大屏。'
+                  )
+                "
                 :closable="false"
               />
-              <ElFormItem label="观看者身份"
+              <ElFormItem :label="bt('观看者身份')"
                 ><ElSelect v-model="scope.identity"
-                  ><ElOption value="user" label="当前用户 ID" /><ElOption
+                  ><ElOption value="user" :label="bt('当前用户 ID')" /><ElOption
                     value="department"
-                    label="当前部门 ID" /></ElSelect
+                    :label="bt('当前部门 ID')" /></ElSelect
               ></ElFormItem>
-              <ElFormItem label="范围字段"
-                ><ElInput v-model="scope.field" placeholder="t0.owner_id 或 SQL 表别名.owner_id"
+              <ElFormItem :label="bt('范围字段')"
+                ><ElInput
+                  v-model="scope.field"
+                  :placeholder="bt('t0.owner_id 或 SQL 表别名.owner_id')"
               /></ElFormItem>
             </template>
-            <p>HTTP 上游的行级隔离需由上游实施，暂不提供此模式。租户映射不从页面参数推断。</p>
+            <p>{{
+              bt('HTTP 上游的行级隔离需由上游实施，暂不提供此模式。租户映射不从页面参数推断。')
+            }}</p>
           </ElTabPane>
-          <ElTabPane label="刷新与限制" name="refresh">
-            <ElFormItem label="默认刷新秒数"
+          <ElTabPane :label="bt('刷新与限制')" name="refresh">
+            <ElFormItem :label="bt('默认刷新秒数')"
               ><ElInputNumber v-model="form.definition.refreshSeconds" :min="10" :max="3600"
             /></ElFormItem>
-            <ElFormItem label="缓存秒数"
+            <ElFormItem :label="bt('缓存秒数')"
               ><ElInputNumber v-model="form.definition.cacheSeconds" :min="0" :max="3600"
             /></ElFormItem>
-            <ElFormItem label="最大结果行数"
+            <ElFormItem :label="bt('最大结果行数')"
               ><ElInputNumber v-model="form.definition.limit" :min="1" :max="5000"
             /></ElFormItem>
-            <ElFormItem label="查询超时（毫秒）"
+            <ElFormItem :label="bt('查询超时（毫秒）')"
               ><ElInputNumber v-model="form.definition.timeoutMs" :min="100" :max="10000"
             /></ElFormItem>
             <ElAlert
               v-if="form.definition.cacheSeconds > form.definition.refreshSeconds"
-              title="缓存时间长于刷新间隔，重复请求可能得到同一批结果。"
+              :title="bt('缓存时间长于刷新间隔，重复请求可能得到同一批结果。')"
               type="warning"
               :closable="false"
             />
           </ElTabPane>
-          <ElTabPane label="结果预览" name="result">
+          <ElTabPane :label="bt('结果预览')" name="result">
             <ElInput
               v-model="previewParams"
               type="textarea"
               :rows="2"
-              placeholder='预览参数 JSON，如 {"region":"east"}'
+              :placeholder="bt('预览参数 JSON，如 {&quot;region&quot;:&quot;east&quot;}')"
             />
-            <ElButton :loading="previewing" @click="preview">执行预览</ElButton>
-            <ElAlert v-if="queryError" :title="queryError" type="error" :closable="false" />
+            <ElButton :loading="previewing" @click="preview">{{ bt('执行预览') }}</ElButton>
+            <ElAlert v-if="queryError" :title="bt(queryError)" type="error" :closable="false" />
             <p v-if="result"
-              >{{ result.total }} 行 · {{ result.durationMs }}ms
-              <span v-if="result.truncated"> · 已截断</span></p
+              >{{ bt('{p0} 行 · {p1}ms', { p0: result.total, p1: result.durationMs })
+              }}<span v-if="result.truncated">{{ bt('· 已截断') }}</span></p
             >
             <ElTable v-if="result" :data="result.rows" max-height="300"
               ><ElTableColumn
                 v-for="field in result.fields"
                 :key="field.name"
                 :prop="field.name"
-                :label="`${field.name} (${field.type})`"
+                :label="bt(`${field.name} (${field.type})`)"
             /></ElTable>
           </ElTabPane>
         </ElTabs>
       </ElForm>
       <template #footer
-        ><ElButton @click="visible = false">取消</ElButton
+        ><ElButton @click="visible = false">{{ bt('取消') }}</ElButton
         ><ElButton
           type="primary"
           :loading="saving"
           :disabled="form.definition.mode === 'legacy'"
           @click="save"
-          >保存新版本</ElButton
+          >{{ bt('保存新版本') }}</ElButton
         ></template
       >
     </ElDialog>
   </div>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { onMounted, ref } from 'vue'
   import { ElMessage } from 'element-plus'
   import api from './api'
@@ -289,7 +318,7 @@
       type: ['string', 'number', 'boolean', 'object'].includes(f.type) ? f.type : 'string',
       nullable: true
     }))
-    ElMessage.success('已采用预览字段，请核对字段类型后保存')
+    ElMessage.success(bt('已采用预览字段，请核对字段类型后保存'))
   }
   function create() {
     scope.value = { mode: 'shared', identity: 'user', field: '' }
@@ -341,7 +370,7 @@
     value.definition.parameters = {}
     for (const p of parameterRows.value) {
       if (!p.name || Object.hasOwn(value.definition.parameters, p.name))
-        throw new Error('参数名称不能为空或重复')
+        throw new Error(bt('参数名称不能为空或重复'))
       value.definition.parameters[p.name] = {
         type: p.type,
         required: p.required,
@@ -360,9 +389,9 @@
       await api.save(payload())
       visible.value = false
       await load()
-      ElMessage.success('数据集版本已保存')
+      ElMessage.success(bt('数据集版本已保存'))
     } catch (e) {
-      ElMessage.error((e as Error).message)
+      ElMessage.error(bt((e as Error).message))
     } finally {
       saving.value = false
     }
@@ -391,7 +420,7 @@
     align-items: center;
   }
   .dataset-heading p {
-    color: #64748b;
+    color: var(--el-text-color-secondary);
   }
   .query-row {
     display: flex;

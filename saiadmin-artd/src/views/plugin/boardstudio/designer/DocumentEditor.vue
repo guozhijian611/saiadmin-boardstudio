@@ -3,26 +3,35 @@
     <header>
       <slot name="publish" :dirty="dirty" />
       <PageParameters :document="document" @command="execute" />
-      <ElButton size="small" @click="presetsVisible = true">预设模板</ElButton>
-      <ElButton size="small" @click="exportVisible = true">导出文档</ElButton>
-      <ElButton size="small" @click="importVisible = true">导入文档</ElButton>
-      <ElDialog v-model="exportVisible" title="导出 V2 文档" width="720px">
-        <p>包含布局和数据集引用，不含连接凭据。跨环境导入后需重新核对数据集 ID。</p>
+      <ElButton size="small" @click="presetsVisible = true">{{ bt('预设模板') }}</ElButton>
+      <ElButton size="small" @click="exportVisible = true">{{ bt('导出文档') }}</ElButton>
+      <ElButton size="small" @click="importVisible = true">{{ bt('导入文档') }}</ElButton>
+      <ElDialog v-model="exportVisible" :title="bt('导出 V2 文档')" width="720px">
+        <p>{{ bt('包含布局和数据集引用，不含连接凭据。跨环境导入后需重新核对数据集 ID。') }}</p>
         <ElInput
           :model-value="JSON.stringify(document, null, 2)"
           type="textarea"
           :rows="16"
           readonly
-          aria-label="导出的 V2 文档"
+          :aria-label="bt('导出的 V2 文档')"
         />
-        <template #footer><ElButton @click="exportDocument">下载 JSON</ElButton></template>
-      </ElDialog>
-      <ElDialog v-model="importVisible" title="导入 V2 文档" width="720px">
-        <p>粘贴文档 JSON 或选择本地文件；应用前校验，替换后可以撤销。</p>
-        <ElInput v-model="importText" type="textarea" :rows="16" aria-label="待导入的 V2 文档" />
         <template #footer
-          ><ElButton @click="importInput?.click()">选择 JSON 文件</ElButton
-          ><ElButton type="primary" @click="applyImport(importText)">校验并导入</ElButton></template
+          ><ElButton @click="exportDocument">{{ bt('下载 JSON') }}</ElButton></template
+        >
+      </ElDialog>
+      <ElDialog v-model="importVisible" :title="bt('导入 V2 文档')" width="720px">
+        <p>{{ bt('粘贴文档 JSON 或选择本地文件；应用前校验，替换后可以撤销。') }}</p>
+        <ElInput
+          v-model="importText"
+          type="textarea"
+          :rows="16"
+          :aria-label="bt('待导入的 V2 文档')"
+        />
+        <template #footer
+          ><ElButton @click="importInput?.click()">{{ bt('选择 JSON 文件') }}</ElButton
+          ><ElButton type="primary" @click="applyImport(importText)">{{
+            bt('校验并导入')
+          }}</ElButton></template
         >
       </ElDialog>
       <input
@@ -32,67 +41,76 @@
         hidden
         @change="importDocument"
       />
-      <ElDialog v-model="presetsVisible" title="V2 预设模板" width="min(1100px,95vw)"
+      <ElDialog v-model="presetsVisible" :title="bt('V2 预设模板')" width="min(1100px,95vw)"
         ><PresetGallery @select="applyPreset"
       /></ElDialog>
       <strong>{{ name || 'Board Studio V2' }}</strong>
       <ElTag size="small" :type="dirty ? 'warning' : 'success'">{{
-        dirty ? '未保存' : '已保存'
+        dirty ? bt('未保存') : bt('已保存')
       }}</ElTag>
-      <ElButton size="small" :disabled="!canUndo" @click="travel('undo')">撤销</ElButton>
-      <ElButton size="small" :disabled="!canRedo" @click="travel('redo')">重做</ElButton>
-      <ElButton size="small" :disabled="isRoot" @click="duplicate">复制节点</ElButton>
-      <ElButton size="small" :disabled="isRoot" @click="removeSelected">删除</ElButton>
+      <ElButton size="small" :disabled="!canUndo" @click="travel('undo')">{{
+        bt('撤销')
+      }}</ElButton>
+      <ElButton size="small" :disabled="!canRedo" @click="travel('redo')">{{
+        bt('重做')
+      }}</ElButton>
+      <ElButton size="small" :disabled="isRoot" @click="duplicate">{{ bt('复制节点') }}</ElButton>
+      <ElButton size="small" :disabled="isRoot" @click="removeSelected">{{ bt('删除') }}</ElButton>
       <label class="zoom"
-        >缩放 <ElInputNumber v-model="zoom" :min="25" :max="150" :step="10" size="small" /> %</label
+        >{{ bt('缩放')
+        }}<ElInputNumber v-model="zoom" :min="25" :max="150" :step="10" size="small" /> %</label
       >
       <ElButton size="small" @click="preview = !preview">{{
-        preview ? '返回设计' : '预览布局'
+        preview ? bt('返回设计') : bt('预览布局')
       }}</ElButton>
-      <ElButton size="small" :loading="saving" type="primary" @click="save">保存文档</ElButton>
+      <ElButton size="small" :loading="saving" type="primary" @click="save">{{
+        bt('保存文档')
+      }}</ElButton>
     </header>
     <div v-if="!preview" class="selection-tools">
-      <span v-if="selectedIds.length > 1">已选择 {{ selectedIds.length }} 个节点</span>
-      <span v-else>Shift 多选 · 容器空白处拖动框选</span>
+      <span v-if="selectedIds.length > 1">{{
+        bt('已选择 {p0} 个节点', { p0: selectedIds.length })
+      }}</span>
+      <span v-else>{{ bt('Shift 多选 · 容器空白处拖动框选') }}</span>
       <ElButton
         v-for="(label, mode) in alignments"
         :key="mode"
         :disabled="selectedIds.length < 2"
         size="small"
         @click="align(mode)"
-        >{{ label }}</ElButton
+        >{{ bt(label) }}</ElButton
       >
     </div>
     <ParameterFilters :document="document" @apply="pageValues = $event" />
     <div class="editor-body">
       <aside v-if="!preview" class="left-panel">
-        <h3>添加内容</h3>
+        <h3>{{ bt('添加内容') }}</h3>
         <div class="insert-buttons"
           ><ElButton
             v-for="(label, mode) in modes"
             :key="mode"
             size="small"
             @click="insertContainer(mode)"
-            >{{ label }}</ElButton
+            >{{ bt(label) }}</ElButton
           ></div
         >
         <ElSelect
           v-model="widgetType"
-          placeholder="选择组件"
-          aria-label="组件类型"
+          :placeholder="bt('选择组件')"
+          :aria-label="bt('组件类型')"
           size="small"
           filterable
         >
           <ElOption
             v-for="widget in widgetRegistry"
             :key="widget.type"
-            :label="widget.name"
+            :label="bt(widget.name)"
             :value="widget.type"
           />
         </ElSelect>
-        <ElButton size="small" @click="insertWidget">插入组件</ElButton>
-        <p>选中容器后插入其内部；选中组件则插入其所在容器。</p>
-        <h3>页面结构</h3>
+        <ElButton size="small" @click="insertWidget">{{ bt('插入组件') }}</ElButton>
+        <p>{{ bt('选中容器后插入其内部；选中组件则插入其所在容器。') }}</p>
+        <h3>{{ bt('页面结构') }}</h3>
         <NodeTree
           :document="document"
           :node-id="document.rootId"
@@ -148,12 +166,16 @@
       </main>
       <aside v-if="!preview" class="right-panel"
         ><section v-if="selectedIds.length > 1" class="multi-inspector">
-          <h3>批量操作 · {{ selectedIds.length }} 个节点</h3>
-          <p>对齐和等距适用于同一个自由布局容器；复制、删除、隐藏和锁定可以跨容器操作。</p>
-          <ElButton size="small" @click="batchFlag('hidden', true)">隐藏所选</ElButton>
-          <ElButton size="small" @click="batchFlag('hidden', false)">显示所选</ElButton>
-          <ElButton size="small" @click="batchFlag('locked', true)">锁定所选</ElButton>
-          <ElButton size="small" @click="batchFlag('locked', false)">解锁所选</ElButton> </section
+          <h3>{{ bt('批量操作 · {p0} 个节点', { p0: selectedIds.length }) }}</h3>
+          <p>{{
+            bt('对齐和等距适用于同一个自由布局容器；复制、删除、隐藏和锁定可以跨容器操作。')
+          }}</p>
+          <ElButton size="small" @click="batchFlag('hidden', true)">{{ bt('隐藏所选') }}</ElButton>
+          <ElButton size="small" @click="batchFlag('hidden', false)">{{ bt('显示所选') }}</ElButton>
+          <ElButton size="small" @click="batchFlag('locked', true)">{{ bt('锁定所选') }}</ElButton>
+          <ElButton size="small" @click="batchFlag('locked', false)">{{
+            bt('解锁所选')
+          }}</ElButton> </section
         ><DocumentInspector
           v-else
           :document="document"
@@ -168,12 +190,21 @@
       /></aside>
     </div>
     <footer
-      >{{ nodeCount }} 个节点 · {{ document.page.width }} × {{ document.page.height }} ·
-      {{ selected.name }} <span v-if="preview">预览使用与设计区相同的布局和渲染器</span></footer
+      >{{
+        bt('{p0} 个节点 · {p1} × {p2} · {p3}', {
+          p0: nodeCount,
+          p1: document.page.width,
+          p2: document.page.height,
+          p3: selected.name
+        })
+      }}<span v-if="preview">{{ bt('预览使用与设计区相同的布局和渲染器') }}</span></footer
     >
   </section>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch, reactive } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import type { BoardDocument, LayoutMode } from '../document/types'
@@ -209,7 +240,10 @@
   async function applyPreset(preset: Preset) {
     try {
       if (preset.type === 'screen')
-        await ElMessageBox.confirm('套用预设会替换当前文档，可通过撤销恢复。', '套用大屏预设')
+        await ElMessageBox.confirm(
+          bt('套用预设会替换当前文档，可通过撤销恢复。'),
+          bt('套用大屏预设')
+        )
       const parent =
         selected.value.kind === 'container'
           ? selected.value.id
@@ -226,7 +260,7 @@
       )
       presetsVisible.value = false
     } catch (e) {
-      if (e instanceof Error) ElMessage.error(e.message)
+      if (e instanceof Error) ElMessage.error(bt(e.message))
     }
   }
   function exportDocument() {
@@ -246,13 +280,13 @@
       const value = JSON.parse(text)
       validateDocument(value)
       await ElMessageBox.confirm(
-        '导入将替换当前文档，可撤销。数据绑定需在当前环境重新核对。',
-        '导入 V2 文档'
+        bt('导入将替换当前文档，可撤销。数据绑定需在当前环境重新核对。'),
+        bt('导入 V2 文档')
       )
       execute({ type: 'replace', document: value })
       importVisible.value = false
     } catch (e) {
-      if (e instanceof Error) ElMessage.error(e.message)
+      if (e instanceof Error) ElMessage.error(bt(e.message))
     }
   }
   async function importDocument(event: Event) {
@@ -261,7 +295,7 @@
     input.value = ''
     if (!file) return
     if (file.size > 2 * 1024 * 1024) {
-      ElMessage.error('文档不能超过 2 MB')
+      ElMessage.error(bt('文档不能超过 2 MB'))
       return
     }
     importText.value = await file.text()
@@ -325,7 +359,7 @@
     try {
       execute(alignSelection(document.value, selectedIds.value, mode))
     } catch (e) {
-      ElMessage.error((e as Error).message)
+      ElMessage.error(bt((e as Error).message))
     }
   }
   function batchFlag(key: 'hidden' | 'locked', value: boolean) {
@@ -428,7 +462,7 @@
     try {
       sync(session.execute(command))
     } catch (error) {
-      ElMessage.error((error as Error).message)
+      ElMessage.error(bt((error as Error).message))
     }
   }
   const travel = (direction: 'undo' | 'redo') => sync(session[direction]())
@@ -482,9 +516,9 @@
     try {
       await props.onSave(snapshot)
       savedSnapshot.value = JSON.stringify(snapshot)
-      ElMessage.success('文档已保存')
+      ElMessage.success(bt('文档已保存'))
     } catch (error) {
-      ElMessage.error((error as Error).message || '保存失败')
+      ElMessage.error((error as Error).message || bt('保存失败'))
     } finally {
       saving.value = false
     }
@@ -668,16 +702,16 @@
     min-height: 600px;
     display: flex;
     flex-direction: column;
-    background: #f4f6fa;
-    color: #1e293b;
+    background: var(--el-bg-color-page);
+    color: var(--el-text-color-primary);
   }
   header {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 12px 16px;
-    background: white;
-    border-bottom: 1px solid #e2e8f0;
+    background: var(--el-bg-color);
+    border-bottom: 1px solid var(--el-border-color);
     flex-wrap: wrap;
   }
   .zoom {
@@ -696,18 +730,18 @@
     min-height: 0;
   }
   aside {
-    background: white;
+    background: var(--el-bg-color);
     overflow: auto;
     flex-shrink: 0;
   }
   .left-panel {
     width: 230px;
     padding: 12px;
-    border-right: 1px solid #e2e8f0;
+    border-right: 1px solid var(--el-border-color);
   }
   .left-panel p {
     font-size: 12px;
-    color: #64748b;
+    color: var(--el-text-color-secondary);
   }
   .left-panel h3 {
     font-size: 13px;
@@ -727,29 +761,29 @@
   }
   .multi-inspector p {
     font-size: 12px;
-    color: #64748b;
+    color: var(--el-text-color-secondary);
   }
   .multi-inspector :deep(.el-button) {
     margin: 4px;
   }
   .right-panel {
     width: 280px;
-    border-left: 1px solid #e2e8f0;
+    border-left: 1px solid var(--el-border-color);
   }
   .selection-tools {
     display: flex;
     gap: 6px;
     align-items: center;
     padding: 8px 16px;
-    background: #fff;
+    background: var(--el-bg-color);
   }
   .selection-tools span {
     font-size: 12px;
   }
   .marquee {
     position: absolute;
-    border: 1px solid #409eff;
-    background: #409eff22;
+    border: 1px solid var(--el-color-primary);
+    background: var(--el-color-primary-light-9);
     pointer-events: none;
     z-index: 999999;
   }
@@ -759,19 +793,19 @@
     min-width: 0;
     overflow: auto;
     padding: 24px;
-    background-color: #e2e8f0;
-    background-image: radial-gradient(#b8c4d2 1px, transparent 1px);
+    background-color: var(--el-border-color);
+    background-image: radial-gradient(var(--el-border-color-darker) 1px, transparent 1px);
     background-size: 16px 16px;
   }
   .canvas-page {
     transform-origin: top left;
-    box-shadow: 0 8px 30px #0f172a33;
+    box-shadow: var(--el-box-shadow-light);
   }
   footer {
     padding: 8px 16px;
-    background: white;
+    background: var(--el-bg-color);
     font-size: 12px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--el-border-color);
   }
   footer span {
     float: right;

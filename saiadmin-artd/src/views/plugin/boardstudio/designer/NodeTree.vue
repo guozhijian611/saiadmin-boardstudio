@@ -10,12 +10,13 @@
       >
         <span>{{ node.kind === 'container' ? '▣' : '◇' }}</span
         >{{ node.name }}<small v-if="node.layout">{{ node.layout.mode }}</small
-        ><small v-if="node.hidden">隐藏</small><small v-if="node.locked">锁定</small>
+        ><small v-if="node.hidden">{{ bt('隐藏') }}</small
+        ><small v-if="node.locked">{{ bt('锁定') }}</small>
       </button>
       <span
         v-if="nodeId !== document.rootId"
         class="drop-after"
-        title="拖到这里排在本节点之后"
+        :title="bt('拖到这里排在本节点之后')"
         @dragover.prevent
         @drop.stop.prevent="drop($event, 'after')"
         >↧</span
@@ -34,6 +35,9 @@
   </div>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { computed } from 'vue'
   import type { BoardDocument } from '../document/types'
   import { parentOf } from '../document/model'
@@ -71,7 +75,7 @@
     align-items: center;
   }
   .tree-row:hover {
-    background: #f2f6ff;
+    background: var(--el-fill-color-light);
   }
   button {
     flex: 1;
@@ -87,8 +91,8 @@
     cursor: pointer;
   }
   button.active {
-    background: #e9f2ff;
-    color: #2563eb;
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
   }
   small {
     font-size: 10px;
@@ -97,10 +101,10 @@
   .drop-after {
     cursor: move;
     padding: 8px;
-    color: #9aa8bb;
+    color: var(--el-text-color-secondary);
     font-size: 12px;
   }
   .drop-after:hover {
-    background: #b8d6ff;
+    background: var(--el-color-primary-light-7);
   }
 </style>

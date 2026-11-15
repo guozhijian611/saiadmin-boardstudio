@@ -1,10 +1,10 @@
 <template>
   <div class="document-player" ref="viewport">
     <div v-if="error" class="player-message"
-      ><h2>{{ error }}</h2
-      ><ElButton @click="load">重新加载</ElButton></div
+      ><h2>{{ bt(error) }}</h2
+      ><ElButton @click="load">{{ bt('重新加载') }}</ElButton></div
     >
-    <div v-else-if="!document" class="player-message">正在加载大屏…</div>
+    <div v-else-if="!document" class="player-message">{{ bt('正在加载大屏…') }}</div>
     <ParameterFilters v-if="document" :document="document" @apply="applyParameters" />
     <div
       v-if="document && !error"
@@ -21,12 +21,15 @@
       <DocumentNode :document="document" :node-id="document.rootId" :results="results" />
     </div>
     <div v-if="lastError" class="data-warning"
-      >{{ lastError }} <button @click="runtime.refresh()">重试</button
-      ><button @click="load">重新加载发布版本</button></div
+      >{{ lastError }} <button @click="runtime.refresh()">{{ bt('重试') }}</button
+      ><button @click="load">{{ bt('重新加载发布版本') }}</button></div
     >
   </div>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { nextTick, computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef } from 'vue'
   import ParameterFilters from '../designer/ParameterFilters.vue'
   import { resolveDocumentBindings } from '../document/parameters'
@@ -125,10 +128,10 @@
     position: fixed;
     inset: 0;
     overflow: hidden;
-    background: #07111f;
+    background: var(--el-bg-color-page);
   }
   .player-message {
-    color: #fff;
+    color: var(--el-text-color-primary);
     text-align: center;
     padding: 15vh 24px;
   }
@@ -137,13 +140,13 @@
     bottom: 12px;
     left: 12px;
     padding: 8px 14px;
-    background: #793a22;
-    color: white;
+    background: var(--el-color-warning-light-9);
+    color: var(--el-text-color-primary);
     border-radius: 6px;
     font-size: 12px;
   }
   .data-warning button {
     margin-left: 10px;
-    color: #111;
+    color: var(--el-text-color-primary);
   }
 </style>

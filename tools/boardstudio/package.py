@@ -44,7 +44,7 @@ for base, prefix in [(backend, 'plugin/boardstudio'), (frontend, 'saiadmin-artd/
 install['plugin/boardstudio/PROJECT-LICENSE'] = (ROOT / 'LICENSE').read_bytes()
 install['plugin/boardstudio/THIRD_PARTY_NOTICES.md'] = (ROOT / 'THIRD_PARTY_NOTICES.md').read_bytes()
 install['info.ini'] = (f'app = boardstudio\ntitle = Board Studio\nabout = 独立大屏编辑与播放插件\nauthor = guozhijian611\nwebsite = https://github.com/guozhijian611/saiadmin-boardstudio\nversion = {VERSION}\nsupport = 6.x\n').encode()
-install['config.json'] = json.dumps({'dependencies': {'echarts': '^6.0.0', 'vue3-draggable-resizable': '^1.6.5'}}, indent=2).encode()
+install['config.json'] = json.dumps({'dependencies': {'echarts': '^6.0.0', 'vue3-draggable-resizable': '^1.6.5', 'vue-i18n': '^9.14.0'}}, indent=2).encode()
 a.output.parent.mkdir(parents=True, exist_ok=True)
 with zipfile.ZipFile(a.output, 'w') as z:
     for name, data in sorted(install.items()):

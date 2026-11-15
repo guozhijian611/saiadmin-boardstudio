@@ -1,10 +1,10 @@
 <template>
   <section v-if="definition">
-    <h4>{{ definition.name }}配置</h4>
+    <h4>{{ bt('{p0}配置', { p0: bt(definition.name) }) }}</h4>
     <ElFormItem
       v-for="property in definition.properties"
       :key="property.key"
-      :label="property.label"
+      :label="bt(property.label)"
     >
       <ElSwitch
         v-if="property.type === 'boolean'"
@@ -27,7 +27,7 @@
         ><ElOption
           v-for="option in property.options"
           :key="option.value"
-          :label="option.label"
+          :label="bt(option.label)"
           :value="option.value"
       /></ElSelect>
       <ElInput
@@ -39,6 +39,9 @@
   </section>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { computed } from 'vue'
   import { ElMessage } from 'element-plus'
   import { widgetDefinition, validateWidgetProperties } from '../widgets/definitions'
@@ -63,7 +66,7 @@
         patch: { widget: { ...props.node.widget!, props: config } }
       })
     } catch (e) {
-      ElMessage.error((e as Error).message)
+      ElMessage.error(bt((e as Error).message))
     }
   }
 </script>

@@ -4,6 +4,8 @@
 </template>
 
 <script setup lang="ts">
+  import { useBoardI18n } from '../../i18n'
+  const { bt } = useBoardI18n()
   import { useChartOps, useChartComponent } from '../useChart'
   import type { EChartsOption, BarSeriesOption } from '../echarts'
   import type { BidirectionalBarChartProps } from '../types'
@@ -21,8 +23,8 @@
     positiveData: () => [],
     negativeData: () => [],
     xAxisData: () => [],
-    positiveName: '正向数据',
-    negativeName: '负向数据',
+    positiveName: '',
+    negativeName: '',
     barWidth: 16,
     yAxisMin: -100,
     yAxisMax: 100,
@@ -142,7 +144,7 @@
         legend: props.showLegend
           ? {
               ...getLegendStyle(props.legendPosition),
-              data: [props.negativeName, props.positiveName]
+              data: [props.negativeName || bt('负向数据'), props.positiveName || bt('正向数据')]
             }
           : undefined,
 
@@ -170,7 +172,7 @@
         series: [
           // 负向数据系列
           createSeriesConfig({
-            name: props.negativeName,
+            name: props.negativeName || bt('负向数据'),
             data: processedNegativeData,
             borderRadius: props.negativeBorderRadius,
             labelPosition: 'bottom',
@@ -180,7 +182,7 @@
           }),
           // 正向数据系列
           createSeriesConfig({
-            name: props.positiveName,
+            name: props.positiveName || bt('正向数据'),
             data: props.positiveData,
             borderRadius: props.positiveBorderRadius,
             labelPosition: 'top',

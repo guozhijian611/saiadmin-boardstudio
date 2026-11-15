@@ -1,13 +1,25 @@
 <template>
   <section class="preset-gallery">
     <div class="preset-filters">
-      <ElSegmented v-model="selectedType" :options="types" />
-      <ElInput v-model="keyword" clearable placeholder="搜索预设名称或用途" aria-label="搜索预设" />
-      <ElSelect v-model="category" clearable placeholder="全部分类" aria-label="预设分类">
-        <ElOption v-for="name in categories" :key="name" :label="name" :value="name" />
+      <ElSegmented v-model="selectedType" :options="localizedOptions(types)" />
+      <ElInput
+        v-model="keyword"
+        clearable
+        :placeholder="bt('搜索预设名称或用途')"
+        :aria-label="bt('搜索预设')"
+      />
+      <ElSelect
+        v-model="category"
+        clearable
+        :placeholder="bt('全部分类')"
+        :aria-label="bt('预设分类')"
+      >
+        <ElOption v-for="name in categories" :key="name" :label="bt(name)" :value="name" />
       </ElSelect>
     </div>
-    <p class="preset-hint">插件内置预设，套用后可自由编辑。示例组件需要绑定你的数据集。</p>
+    <p class="preset-hint">{{
+      bt('插件内置预设，套用后可自由编辑。示例组件需要绑定你的数据集。')
+    }}</p>
     <div v-if="items.length" class="preset-grid">
       <article v-for="item in items" :key="item.id" class="preset-card">
         <div class="preset-preview" aria-hidden="true">
@@ -19,23 +31,26 @@
           />
         </div>
         <div class="preset-card-body">
-          <h3>{{ item.name }}</h3>
-          <p>{{ item.description }}</p>
+          <h3>{{ bt(item.name) }}</h3>
+          <p>{{ bt(item.description) }}</p>
           <div class="preset-card-footer">
-            <ElText type="info" size="small"
-              >{{ item.category }} · {{ item.component_count }} 个组件</ElText
-            >
+            <ElText type="info" size="small">{{
+              bt('{p0} · {p1} 个组件', { p0: bt(item.category), p1: item.component_count })
+            }}</ElText>
             <ElButton type="primary" @click="$emit('select', item)">{{
-              item.type === 'screen' ? '套用预设' : '插入组件'
+              item.type === 'screen' ? bt('套用预设') : bt('插入组件')
             }}</ElButton>
           </div>
         </div>
       </article>
     </div>
-    <ElEmpty v-else description="没有匹配的预设" />
+    <ElEmpty v-else :description="bt('没有匹配的预设')" />
   </section>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt, localizedOptions } = useBoardI18n()
+
   import { computed, ref, watch } from 'vue'
   import { filterPresets, presets, type Preset, type PresetType } from '../core/presets'
   import type { BoardComponent } from '../widgets/types'
@@ -62,7 +77,21 @@
       presets.filter((item) => item.type === selectedType.value).map((item) => item.category)
     )
   ])
-  const items = computed(() => filterPresets(selectedType.value, keyword.value, category.value))
+  const items = computed(() => {
+    const query = keyword.value.trim().toLowerCase()
+    return filterPresets(selectedType.value, '', category.value).filter(
+      (item) =>
+        !query ||
+        [
+          item.name,
+          item.description,
+          item.category,
+          bt(item.name),
+          bt(item.description),
+          bt(item.category)
+        ].some((value) => value.toLowerCase().includes(query))
+    )
+  })
   const previewComponents = (item: Preset) =>
     item.content.layout?.components || item.content.components || []
   const previewStyle = (item: Preset, component: BoardComponent) => {

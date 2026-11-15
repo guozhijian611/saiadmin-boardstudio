@@ -2,32 +2,39 @@
   <div class="art-full-height">
     <ElCard class="art-table-card" shadow="never">
       <ElForm :model="search" inline class="mb-4">
-        <ElFormItem label="名称"><ElInput v-model="search.name" clearable /></ElFormItem>
-        <ElFormItem label="类型">
+        <ElFormItem :label="bt('名称')"><ElInput v-model="search.name" clearable /></ElFormItem>
+        <ElFormItem :label="bt('类型')">
           <ElSelect v-model="search.type" clearable style="width: 120px">
             <ElOption label="MySQL" value="mysql" />
             <ElOption label="HTTP" value="http" />
           </ElSelect>
         </ElFormItem>
-        <ElFormItem><ElButton type="primary" @click="loadData">搜索</ElButton></ElFormItem>
+        <ElFormItem
+          ><ElButton type="primary" @click="loadData">{{ bt('搜索') }}</ElButton></ElFormItem
+        >
       </ElForm>
 
       <ArtTableHeader :loading="loading" @refresh="loadData">
         <template #left>
           <ElButton v-permission="'boardstudio:datasource:save'" @click="openDialog()">
-            <template #icon><ArtSvgIcon icon="ri:add-fill" /></template>
-            新增数据源
-          </ElButton>
+            <template #icon><ArtSvgIcon icon="ri:add-fill" /></template
+            >{{ bt('新增数据源') }}</ElButton
+          >
         </template>
       </ArtTableHeader>
 
       <ElTable v-loading="loading" :data="rows" row-key="id">
         <ElTableColumn prop="id" label="ID" width="90" />
-        <ElTableColumn prop="name" label="名称" min-width="180" />
-        <ElTableColumn prop="type" label="类型" width="110" />
-        <ElTableColumn prop="cache_ttl" label="缓存秒" width="100" />
-        <ElTableColumn prop="last_error" label="最近错误" min-width="220" show-overflow-tooltip />
-        <ElTableColumn label="状态" width="110">
+        <ElTableColumn prop="name" :label="bt('名称')" min-width="180" />
+        <ElTableColumn prop="type" :label="bt('类型')" width="110" />
+        <ElTableColumn prop="cache_ttl" :label="bt('缓存秒')" width="100" />
+        <ElTableColumn
+          prop="last_error"
+          :label="bt('最近错误')"
+          min-width="220"
+          show-overflow-tooltip
+        />
+        <ElTableColumn :label="bt('状态')" width="110">
           <template #default="{ row }">
             <ElSwitch
               v-permission="'boardstudio:datasource:changeStatus'"
@@ -38,7 +45,7 @@
             />
           </template>
         </ElTableColumn>
-        <ElTableColumn label="操作" width="310" fixed="right">
+        <ElTableColumn :label="bt('操作')" width="310" fixed="right">
           <template #default="{ row }">
             <ElSpace>
               <ResourceGrants resource-type="datasource" :resource-id="row.id" />
@@ -46,21 +53,20 @@
                 v-permission="'boardstudio:datasource:test'"
                 size="small"
                 @click="test(row)"
+                >{{ bt('测试') }}</ElButton
               >
-                测试
-              </ElButton>
               <ElButton
                 v-permission="'boardstudio:datasource:update'"
                 size="small"
                 @click="openDialog(row)"
-                >编辑</ElButton
+                >{{ bt('编辑') }}</ElButton
               >
               <ElButton
                 v-permission="'boardstudio:datasource:destroy'"
                 type="danger"
                 size="small"
                 @click="deleteRow(row)"
-                >删除</ElButton
+                >{{ bt('删除') }}</ElButton
               >
             </ElSpace>
           </template>
@@ -68,10 +74,14 @@
       </ElTable>
     </ElCard>
 
-    <ElDialog v-model="dialogVisible" :title="form.id ? '编辑数据源' : '新增数据源'" width="860px">
+    <ElDialog
+      v-model="dialogVisible"
+      :title="form.id ? bt('编辑数据源') : bt('新增数据源')"
+      width="860px"
+    >
       <ElForm ref="formRef" :model="form" :rules="rules" label-width="110px">
-        <ElFormItem label="名称" prop="name"><ElInput v-model="form.name" /></ElFormItem>
-        <ElFormItem label="类型" prop="type">
+        <ElFormItem :label="bt('名称')" prop="name"><ElInput v-model="form.name" /></ElFormItem>
+        <ElFormItem :label="bt('类型')" prop="type">
           <ElRadioGroup
             v-model="form.type"
             :disabled="Boolean(form.id)"
@@ -82,139 +92,145 @@
           </ElRadioGroup>
         </ElFormItem>
         <template v-if="form.type === 'mysql'">
-          <ElFormItem label="主机" prop="config.host"
+          <ElFormItem :label="bt('主机')" prop="config.host"
             ><ElInput v-model="form.config.host"
           /></ElFormItem>
-          <ElFormItem label="端口"
+          <ElFormItem :label="bt('端口')"
             ><ElInputNumber v-model="form.config.port" :min="1" :max="65535"
           /></ElFormItem>
-          <ElFormItem label="数据库" prop="config.database"
+          <ElFormItem :label="bt('数据库')" prop="config.database"
             ><ElInput v-model="form.config.database"
           /></ElFormItem>
-          <ElFormItem label="用户名" prop="config.username"
+          <ElFormItem :label="bt('用户名')" prop="config.username"
             ><ElInput v-model="form.config.username"
           /></ElFormItem>
-          <ElFormItem label="密码"
+          <ElFormItem :label="bt('密码')"
             ><ElInput
               v-model="form.config.password"
               type="password"
               show-password
-              placeholder="留空保留已保存的密码"
+              :placeholder="bt('留空保留已保存的密码')"
           /></ElFormItem>
-          <ElFormItem v-if="form.id" label="清空密码"
-            ><ElCheckbox v-model="clearPassword">显式清空已保存密码</ElCheckbox></ElFormItem
+          <ElFormItem v-if="form.id" :label="bt('清空密码')"
+            ><ElCheckbox v-model="clearPassword">{{
+              bt('显式清空已保存密码')
+            }}</ElCheckbox></ElFormItem
           >
-          <ElFormItem label="字符集"><ElInput v-model="form.config.charset" /></ElFormItem>
+          <ElFormItem :label="bt('字符集')"><ElInput v-model="form.config.charset" /></ElFormItem>
         </template>
         <template v-else>
           <ElAlert
             v-if="form.id"
-            title="[已保存] 表示保留原值；替换可输入新值，删除键可移除该请求头或默认参数。"
+            :title="bt('[已保存] 表示保留原值；替换可输入新值，删除键可移除该请求头或默认参数。')"
             :closable="false"
           />
           <ElFormItem label="URL" prop="config.url"
             ><ElInput v-model="form.config.url"
           /></ElFormItem>
-          <ElFormItem label="请求头">
+          <ElFormItem :label="bt('请求头')">
             <ElInput
               v-model="headersText"
               type="textarea"
               :rows="4"
-              placeholder='例如 {"Authorization":"Bearer xxx"}'
+              :placeholder="bt('例如 {&quot;Authorization&quot;:&quot;Bearer xxx&quot;}')"
             />
           </ElFormItem>
-          <ElFormItem label="默认参数">
+          <ElFormItem :label="bt('默认参数')">
             <ElInput
               v-model="paramsText"
               type="textarea"
               :rows="4"
-              placeholder='例如 {"range":"7d"}'
+              :placeholder="bt('例如 {&quot;range&quot;:&quot;7d&quot;}')"
             />
           </ElFormItem>
-          <ElDivider content-position="left">测试配置</ElDivider>
-          <ElFormItem label="测试方法">
+          <ElDivider content-position="left">{{ bt('测试配置') }}</ElDivider>
+          <ElFormItem :label="bt('测试方法')">
             <ElRadioGroup v-model="httpTestConfig.method">
               <ElRadioButton label="GET">GET</ElRadioButton>
               <ElRadioButton label="POST">POST JSON</ElRadioButton>
             </ElRadioGroup>
           </ElFormItem>
-          <ElFormItem label="测试路径">
+          <ElFormItem :label="bt('测试路径')">
             <ElInput
               v-model="httpTestConfig.path"
               clearable
-              placeholder="例如 /metrics/orders，可留空直接请求 URL"
+              :placeholder="bt('例如 /metrics/orders，可留空直接请求 URL')"
             />
           </ElFormItem>
-          <ElFormItem label="测试参数">
+          <ElFormItem :label="bt('测试参数')">
             <ElInput
               v-model="testParamsText"
               type="textarea"
               :rows="4"
-              placeholder='例如 {"range":"7d"}'
+              :placeholder="bt('例如 {&quot;range&quot;:&quot;7d&quot;}')"
             />
           </ElFormItem>
-          <ElFormItem v-if="httpTestConfig.method === 'POST'" label="测试 Body">
+          <ElFormItem v-if="httpTestConfig.method === 'POST'" :label="bt('测试 Body')">
             <ElInput
               v-model="testBodyText"
               type="textarea"
               :rows="4"
-              placeholder='例如 {"range":"7d","tenant":"b8"}'
+              :placeholder="
+                bt('例如 {&quot;range&quot;:&quot;7d&quot;,&quot;tenant&quot;:&quot;b8&quot;}')
+              "
             />
           </ElFormItem>
-          <ElFormItem label="响应路径">
+          <ElFormItem :label="bt('响应路径')">
             <ElInput
               v-model="httpTestConfig.response_path"
               clearable
-              placeholder="例如 data.items，可留空自动识别 rows 或 data"
+              :placeholder="bt('例如 data.items，可留空自动识别 rows 或 data')"
             />
           </ElFormItem>
-          <ElFormItem label="总数路径">
+          <ElFormItem :label="bt('总数路径')">
             <ElInput
               v-model="httpTestConfig.total_path"
               clearable
-              placeholder="例如 data.total，可留空使用 total 或行数"
+              :placeholder="bt('例如 data.total，可留空使用 total 或行数')"
             />
           </ElFormItem>
         </template>
-        <ElFormItem label="缓存秒"
+        <ElFormItem :label="bt('缓存秒')"
           ><ElInputNumber v-model="form.cache_ttl" :min="0" :max="86400"
         /></ElFormItem>
-        <ElFormItem label="状态">
+        <ElFormItem :label="bt('状态')">
           <ElRadioGroup v-model="form.status">
-            <ElRadioButton :label="1">启用</ElRadioButton>
-            <ElRadioButton :label="2">停用</ElRadioButton>
+            <ElRadioButton :label="bt(1)">{{ bt('启用') }}</ElRadioButton>
+            <ElRadioButton :label="bt(2)">{{ bt('停用') }}</ElRadioButton>
           </ElRadioGroup>
         </ElFormItem>
         <ElAlert
           v-if="testMessage"
           class="datasource-test-alert"
-          :title="testMessage"
+          :title="bt(testMessage)"
           :type="testPassed ? 'success' : 'error'"
           show-icon
           :closable="false"
         />
       </ElForm>
       <template #footer>
-        <ElButton @click="dialogVisible = false">取消</ElButton>
+        <ElButton @click="dialogVisible = false">{{ bt('取消') }}</ElButton>
         <ElButton
           v-permission="'boardstudio:datasource:test'"
           :loading="testLoading"
           @click="test(form)"
-          >测试</ElButton
+          >{{ bt('测试') }}</ElButton
         >
         <ElButton
           v-permission="form.id ? 'boardstudio:datasource:update' : 'boardstudio:datasource:save'"
           type="primary"
           @click="submit"
+          >{{ bt('提交') }}</ElButton
         >
-          提交
-        </ElButton>
       </template>
     </ElDialog>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { ElMessage, ElMessageBox } from 'element-plus'
   import type { FormInstance, FormRules } from 'element-plus'
   import api from '../api/datasource'
@@ -248,14 +264,14 @@
     status: 1
   })
 
-  const rules: FormRules = {
-    name: [{ required: true, message: '名称必填', trigger: 'blur' }],
-    type: [{ required: true, message: '类型必选', trigger: 'change' }],
-    'config.host': [{ required: true, message: '主机必填', trigger: 'blur' }],
-    'config.database': [{ required: true, message: '数据库必填', trigger: 'blur' }],
-    'config.username': [{ required: true, message: '用户名必填', trigger: 'blur' }],
-    'config.url': [{ required: true, message: 'URL 必填', trigger: 'blur' }]
-  }
+  const rules = computed<FormRules>(() => ({
+    name: [{ required: true, message: bt('名称必填'), trigger: 'blur' }],
+    type: [{ required: true, message: bt('类型必选'), trigger: 'change' }],
+    'config.host': [{ required: true, message: bt('主机必填'), trigger: 'blur' }],
+    'config.database': [{ required: true, message: bt('数据库必填'), trigger: 'blur' }],
+    'config.username': [{ required: true, message: bt('用户名必填'), trigger: 'blur' }],
+    'config.url': [{ required: true, message: bt('URL 必填'), trigger: 'blur' }]
+  }))
 
   const mysqlDefaults = () => ({
     host: '127.0.0.1',
@@ -360,7 +376,7 @@
     } else {
       await api.save(payload)
     }
-    ElMessage.success('保存成功')
+    ElMessage.success(bt('保存成功'))
     dialogVisible.value = false
     loadData()
   }
@@ -379,7 +395,7 @@
         testPassed.value = true
         testMessage.value = message
       }
-      ElMessage.success(message)
+      ElMessage.success(bt(message))
       if (!isFormTesting) loadData()
     } catch (error: any) {
       if (isFormTesting) {
@@ -393,14 +409,16 @@
 
   const changeStatus = async (row: any, status: number) => {
     await api.changeStatus({ id: row.id, status })
-    ElMessage.success('状态已更新')
+    ElMessage.success(bt('状态已更新'))
     loadData()
   }
 
   const deleteRow = async (row: any) => {
-    await ElMessageBox.confirm(`确定删除「${row.name}」吗？`, '删除数据源', { type: 'warning' })
+    await ElMessageBox.confirm(bt('确定删除「{p0}」吗？', { p0: row.name }), bt('删除数据源'), {
+      type: 'warning'
+    })
     await api.delete({ ids: [row.id] })
-    ElMessage.success('删除成功')
+    ElMessage.success(bt('删除成功'))
     loadData()
   }
 
@@ -412,7 +430,7 @@
       }
       return value
     } catch {
-      ElMessage.error(`${label}必须是 JSON 对象`)
+      ElMessage.error(bt('{p0}必须是 JSON 对象', { p0: label }))
       throw new Error(`${label}必须是 JSON 对象`)
     }
   }

@@ -46,15 +46,18 @@
           !child.locked
         "
         class="resize-handle"
-        :aria-label="`调整 ${child.name} 尺寸`"
+        :aria-label="bt('调整 {p0} 尺寸', { p0: child.name })"
         @click.stop
         @pointerdown.stop="$emit('node-resize', $event, child.id)"
       />
-      <span v-if="editable && child.locked" class="document-lock">锁定</span>
+      <span v-if="editable && child.locked" class="document-lock">{{ bt('锁定') }}</span>
     </div>
   </div>
 </template>
 <script setup lang="ts">
+  import { useBoardI18n } from '../i18n'
+  const { bt } = useBoardI18n()
+
   import { computed } from 'vue'
   import { containerStyle, nodeStyle } from '../document/layout'
   import type { BoardDocument, DocumentNode as Node } from '../document/types'
@@ -108,13 +111,13 @@
     bottom: 0;
     width: 12px;
     height: 12px;
-    background: #409eff;
-    border: 1px solid #fff;
+    background: var(--el-color-primary);
+    border: 1px solid var(--el-bg-color);
     cursor: se-resize;
     z-index: 100001;
   }
   .document-selected {
-    outline: 2px solid #409eff;
+    outline: 2px solid var(--el-color-primary);
     outline-offset: -2px;
   }
   .document-lock {
@@ -122,8 +125,8 @@
     top: 2px;
     right: 2px;
     padding: 2px 5px;
-    color: #fff;
-    background: #334155;
+    color: var(--el-bg-color);
+    background: var(--el-fill-color-dark);
     font-size: 10px;
   }
 </style>
