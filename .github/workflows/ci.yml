@@ -1,0 +1,56 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: saiadmin-artd/pnpm-lock.yaml
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.4'
+          extensions: openssl
+          coverage: none
+      - name: Install locked dependencies
+        run: pnpm --dir saiadmin-artd install --frozen-lockfile
+      - name: Lint shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2 syntax
+        run: find server/plugin/boardstudio tools/boardstudio/tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Verify plugin
+        run: node tools/boardstudio/verify.mjs
+      - name: Build player and dependency notices
+        run: node tools/boardstudio/build-player.mjs
+      - name: Package and validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(cat VERSION)"
+          python3 tools/boardstudio/package.py --skip-build --output "dist/boardstudio-${VERSION}.zip" --source-output "dist/boardstudio-source-${VERSION}.zip"
+          python3 tools/boardstudio/check-package.py "dist/boardstudio-${VERSION}.zip"
+          cd dist
+          sha256sum "boardstudio-${VERSION}.zip" "boardstudio-source-${VERSION}.zip" > SHA256SUMS.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: boardstudio-packages
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14

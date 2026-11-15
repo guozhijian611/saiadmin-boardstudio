@@ -1,0 +1,383 @@
+{
+  "schemaVersion": 2,
+  "page": {
+    "width": 1440,
+    "height": 900,
+    "sizing": "fixed",
+    "background": "#07111f"
+  },
+  "rootId": "root",
+  "nodes": {
+    "root": {
+      "id": "root",
+      "name": "页面",
+      "kind": "container",
+      "hidden": false,
+      "locked": false,
+      "placement": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900,
+        "zIndex": 1,
+        "grow": 0,
+        "shrink": 1,
+        "basis": "auto",
+        "columnSpan": 1,
+        "rowSpan": 1
+      },
+      "appearance": {
+        "background": "transparent",
+        "color": "#e5efff",
+        "borderColor": "#294666",
+        "borderWidth": 0,
+        "borderRadius": 0,
+        "opacity": 1
+      },
+      "layout": {
+        "mode": "grid",
+        "direction": "row",
+        "gap": 16,
+        "padding": 24,
+        "align": "stretch",
+        "justify": "start",
+        "wrap": false,
+        "columns": 3,
+        "rowHeight": 130
+      },
+      "children": [
+        "title",
+        "metrics",
+        "trend",
+        "status"
+      ]
+    },
+    "metric_0": {
+      "id": "metric_0",
+      "name": "今日订单",
+      "kind": "widget",
+      "hidden": false,
+      "locked": false,
+      "placement": {
+        "x": 24,
+        "y": 24,
+        "width": 320,
+        "height": 180,
+        "zIndex": 1,
+        "grow": 1,
+        "shrink": 1,
+        "basis": 0,
+        "columnSpan": 1,
+        "rowSpan": 1
+      },
+      "appearance": {
+        "background": "#0d1d31",
+        "color": "#e5efff",
+        "borderColor": "#294666",
+        "borderWidth": 0,
+        "borderRadius": 12,
+        "opacity": 1
+      },
+      "widget": {
+        "type": "stat-number",
+        "version": 1,
+        "props": {
+          "unit": "单"
+        }
+      }
+    },
+    "metric_1": {
+      "id": "metric_1",
+      "name": "运输中",
+      "kind": "widget",
+      "hidden": false,
+      "locked": false,
+      "placement": {
+        "x": 24,
+        "y": 24,
+        "width": 320,
+        "height": 180,
+        "zIndex": 1,
+        "grow": 1,
+        "shrink": 1,
+        "basis": 0,
+        "columnSpan": 1,
+        "rowSpan": 1
+      },
+      "appearance": {
+        "background": "#0d1d31",
+        "color": "#e5efff",
+        "borderColor": "#294666",
+        "borderWidth": 0,
+        "borderRadius": 12,
+        "opacity": 1
+      },
+      "widget": {
+        "type": "stat-number",
+        "version": 1,
+        "props": {
+          "unit": "单"
+        }
+      }
+    },
+    "metric_2": {
+      "id": "metric_2",
+      "name": "已完成",
+      "kind": "widget",
+      "hidden": false,
+      "locked": false,
+      "placement": {
+        "x": 24,
+        "y": 24,
+        "width": 320,
+        "height": 180,
+        "zIndex": 1,
+        "grow": 1,
+        "shrink": 1,
+        "basis": 0,
+        "columnSpan": 1,
+        "rowSpan": 1
+      },
+      "appearance": {
+        "background": "#0d1d31",
+        "color": "#e5efff",
+        "borderColor": "#294666",
+        "borderWidth": 0,
+        "borderRadius": 12,
+        "opacity": 1
+      },
+      "widget": {
+        "type": "stat-number",
+        "version": 1,
+        "props": {
+          "unit": "单"
+        }
+      }
+    },
+    "title": {
+      "id": "title",
+      "name": "运营数据驾驶舱",
+      "kind": "widget",
+      "hidden": false,
+      "locked": false,
+      "placement": {
+        "x": 24,
+        "y": 24,
+        "width": 320,
+        "height": 180,
+        "zIndex": 1,
+        "grow": 0,
+        "shrink": 1,
+        "basis": "auto",
+        "columnSpan": 3,
+        "rowSpan": 1
+      },
+      "appearance": {
+        "background": "transparent",
+        "color": "#e5efff",
+        "borderColor": "#294666",
+        "borderWidth": 0,
+        "borderRadius": 0,
+        "opacity": 1
+      },
+      "widget": {
+        "type": "decor-title",
+        "version": 1,
+        "props": {
+          "text": "运营数据驾驶舱",
+          "subtitle": "订单 · 运输 · 服务状态",
+          "accent": "#67e8f9"
+        }
+      }
+    },
+    "metrics": {
+      "id": "metrics",
+      "name": "核心指标区",
+      "kind": "container",
+      "hidden": false,
+      "locked": false,
+      "placement": {
+        "x": 24,
+        "y": 24,
+        "width": 320,
+        "height": 180,
+        "zIndex": 1,
+        "grow": 0,
+        "shrink": 1,
+        "basis": "auto",
+        "columnSpan": 3,
+        "rowSpan": 1
+      },
+      "appearance": {
+        "background": "transparent",
+        "color": "#e5efff",
+        "borderColor": "#294666",
+        "borderWidth": 0,
+        "borderRadius": 0,
+        "opacity": 1
+      },
+      "layout": {
+        "mode": "flex",
+        "direction": "row",
+        "gap": 16,
+        "padding": 0,
+        "align": "stretch",
+        "justify": "start",
+        "wrap": false,
+        "columns": 3,
+        "rowHeight": 180
+      },
+      "children": [
+        "metric_0",
+        "metric_1",
+        "metric_2"
+      ]
+    },
+    "trend": {
+      "id": "trend",
+      "name": "近七天订单",
+      "kind": "widget",
+      "hidden": false,
+      "locked": false,
+      "placement": {
+        "x": 24,
+        "y": 24,
+        "width": 320,
+        "height": 180,
+        "zIndex": 1,
+        "grow": 0,
+        "shrink": 1,
+        "basis": "auto",
+        "columnSpan": 2,
+        "rowSpan": 3
+      },
+      "appearance": {
+        "background": "transparent",
+        "color": "#e5efff",
+        "borderColor": "#294666",
+        "borderWidth": 0,
+        "borderRadius": 0,
+        "opacity": 1
+      },
+      "widget": {
+        "type": "art-line-chart",
+        "version": 1,
+        "props": {
+          "showAreaColor": true
+        }
+      }
+    },
+    "status": {
+      "id": "status",
+      "name": "服务状态面板",
+      "kind": "container",
+      "hidden": false,
+      "locked": false,
+      "placement": {
+        "x": 24,
+        "y": 24,
+        "width": 320,
+        "height": 180,
+        "zIndex": 1,
+        "grow": 0,
+        "shrink": 1,
+        "basis": "auto",
+        "columnSpan": 1,
+        "rowSpan": 3
+      },
+      "appearance": {
+        "background": "#0d1d31",
+        "color": "#e5efff",
+        "borderColor": "#294666",
+        "borderWidth": 1,
+        "borderRadius": 12,
+        "opacity": 1
+      },
+      "layout": {
+        "mode": "free",
+        "direction": "row",
+        "gap": 16,
+        "padding": 16,
+        "align": "stretch",
+        "justify": "start",
+        "wrap": false,
+        "columns": 3,
+        "rowHeight": 180
+      },
+      "children": [
+        "status_title",
+        "status_matrix"
+      ]
+    },
+    "status_title": {
+      "id": "status_title",
+      "name": "状态标题",
+      "kind": "widget",
+      "hidden": false,
+      "locked": false,
+      "placement": {
+        "x": 16,
+        "y": 16,
+        "width": 350,
+        "height": 70,
+        "zIndex": 1,
+        "grow": 0,
+        "shrink": 1,
+        "basis": "auto",
+        "columnSpan": 1,
+        "rowSpan": 1
+      },
+      "appearance": {
+        "background": "transparent",
+        "color": "#e5efff",
+        "borderColor": "#294666",
+        "borderWidth": 0,
+        "borderRadius": 0,
+        "opacity": 1
+      },
+      "widget": {
+        "type": "decor-title",
+        "version": 1,
+        "props": {
+          "text": "服务运行状态",
+          "subtitle": "服务健康概览",
+          "accent": "#67e8f9"
+        }
+      }
+    },
+    "status_matrix": {
+      "id": "status_matrix",
+      "name": "服务健康",
+      "kind": "widget",
+      "hidden": false,
+      "locked": false,
+      "placement": {
+        "x": 16,
+        "y": 100,
+        "width": 350,
+        "height": 280,
+        "zIndex": 1,
+        "grow": 0,
+        "shrink": 1,
+        "basis": "auto",
+        "columnSpan": 1,
+        "rowSpan": 1
+      },
+      "appearance": {
+        "background": "transparent",
+        "color": "#e5efff",
+        "borderColor": "#294666",
+        "borderWidth": 0,
+        "borderRadius": 0,
+        "opacity": 1
+      },
+      "widget": {
+        "type": "status-matrix",
+        "version": 1,
+        "props": {}
+      }
+    }
+  },
+  "bindings": {},
+  "parameters": {}
+}

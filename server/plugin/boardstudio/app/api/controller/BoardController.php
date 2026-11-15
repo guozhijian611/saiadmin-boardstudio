@@ -1,0 +1,403 @@
+<?php
+
+namespace plugin\boardstudio\app\api\controller;
+
+use hg\apidoc\annotation as Apidoc;
+use InvalidArgumentException;
+use plugin\saiadmin\app\cache\UserAuthCache;
+use plugin\saiadmin\exception\ApiException;
+use plugin\boardstudio\app\admin\logic\ScreenLogic;
+use plugin\boardstudio\app\model\Datasource;
+use plugin\boardstudio\app\model\QueryTemplate;
+use plugin\boardstudio\app\model\Screen;
+use plugin\boardstudio\app\model\ScreenToken;
+use plugin\boardstudio\app\service\DataSourceExecutor;
+use plugin\boardstudio\app\service\RuntimeGuard;
+use RuntimeException;
+use support\Request;
+use plugin\boardstudio\app\service\Responses;
+use support\Response;
+use Throwable;
+
+#[Apidoc\Group('Board Studio')]
+#[Apidoc\Title('大屏公开运行接口')]
+class BoardController
+{
+    private const MIN_REFRESH_SECONDS = 10;
+    private const MAX_REFRESH_SECONDS = 3600;
+    private const TOKEN_TOUCH_INTERVAL_SECONDS = 60;
+
+    public function __construct(
+        private readonly DataSourceExecutor $executor = new DataSourceExecutor(),
+        private readonly RuntimeGuard $guard = new RuntimeGuard()
+    )
+    {
+    }
+
+    #[Apidoc\Title('获取大屏配置')]
+    #[Apidoc\Url('/app/boardstudio/api/screen/{code}')]
+    #[Apidoc\Method('GET')]
+    #[Apidoc\Query('token', type: 'string', require: false, desc: '访问令牌')]
+    #[Apidoc\Query('admin_preview', type: 'int', require: false, desc: '后台预览标记，需携带后台 JWT')]
+    #[Apidoc\Query('draft', type: 'int', require: false, desc: '草稿预览标记，仅后台预览可用')]
+    #[Apidoc\Returned('screen', type: 'object', desc: '脱敏大屏配置')]
+    public function getScreen(Request $request, string $code): Response
+    {
+        $context = $this->screenContext($request, $code);
+        if (isset($context['error'])) {
+            return Responses::fail($context['error'], (int) ($context['status'] ?? 400));
+        }
+        /** @var Screen $screen */
+        $screen = $context['screen'];
+        if ($limited = $this->guard->assertAllowed($request, $screen, 'screen')) {
+            return $this->rateLimited($limited);
+        }
+
+        return Responses::ok([
+            'screen' => [
+                'code' => $screen->code,
+                'name' => $screen->name,
+                'width' => (int) $screen->width,
+                'height' => (int) $screen->height,
+                'bg_config' => $screen->bg_config,
+                'is_public' => (int) $screen->is_public,
+                'status' => (int) $screen->status,
+                'preview_mode' => $context['draft'] ? 'draft' : 'published',
+                'layout' => $context['layout'],
+            ],
+        ]);
+    }
+
+    #[Apidoc\Title('获取组件数据')]
+    #[Apidoc\Url('/app/boardstudio/api/data')]
+    #[Apidoc\Method('GET/POST')]
+    #[Apidoc\Query('code', type: 'string', require: true, desc: '大屏编码')]
+    #[Apidoc\Query('cid', type: 'string', require: true, desc: '组件ID')]
+    #[Apidoc\Query('token', type: 'string', require: false, desc: '访问令牌')]
+    #[Apidoc\Query('admin_preview', type: 'int', require: false, desc: '后台预览标记，需携带后台 JWT')]
+    #[Apidoc\Query('draft', type: 'int', require: false, desc: '草稿预览标记，仅后台预览可用')]
+    #[Apidoc\Query('params', type: 'object', require: false, desc: '运行时查询参数')]
+    #[Apidoc\Returned('rows', type: 'array', desc: '数据行')]
+    public function data(Request $request): Response
+    {
+        $code = trim((string) $request->input('code', ''));
+        $cid = trim((string) $request->input('cid', ''));
+        if ($code === '' || $cid === '') {
+            return Responses::fail('参数错误');
+        }
+
+        $context = $this->screenContext($request, $code);
+        if (isset($context['error'])) {
+            return Responses::fail($context['error'], (int) ($context['status'] ?? 400));
+        }
+        /** @var Screen $screen */
+        $screen = $context['screen'];
+        if ($limited = $this->guard->assertAllowed($request, $screen, 'data')) {
+            return $this->rateLimited($limited);
+        }
+
+        $dataset = $this->componentDataset($context['layout'], $cid);
+        $queryTemplateId = (int) ($dataset['queryTemplateId'] ?? $dataset['query_template_id'] ?? 0);
+        if ($queryTemplateId <= 0) {
+            return Responses::fail('组件未绑定查询模板');
+        }
+
+        $template = QueryTemplate::where('id', $queryTemplateId)->where('status', 1)->findOrEmpty();
+        if ($template->isEmpty()) {
+            return Responses::fail('查询模板不存在或已停用');
+        }
+        if (!$this->ownedTemplate($screen, $template)) {
+            return Responses::fail('查询模板不存在或已停用');
+        }
+
+        try {
+            return Responses::ok($this->executor->execute($template, false, $this->runtimeParams($request), [
+                'screen' => (string) $screen->id,
+                'owner' => (string) ((int) ($screen->created_by ?? 0)),
+            ]));
+        } catch (RuntimeException $exception) {
+            if ($exception->getMessage() === '数据缓存刷新中') {
+                return $this->cacheRefreshing();
+            }
+
+            return Responses::fail('数据源执行失败');
+        } catch (InvalidArgumentException) {
+            return Responses::fail('数据源执行失败');
+        } catch (Throwable) {
+            return Responses::fail('数据源执行失败');
+        }
+    }
+
+    /**
+     * @return array{screen?: Screen, layout?: array, draft?: bool, error?: string, status?: int}
+     */
+    private function screenContext(Request $request, string $code): array
+    {
+        $draftPreview = $this->isDraftPreview($request);
+        if ($draftPreview && (!$this->isAdminPreview($request) || !$this->canUseAdminPreview())) {
+            return ['error' => '无权预览草稿', 'status' => 401];
+        }
+
+        $screen = $this->screenByCode($code, !$draftPreview);
+        if (!$screen) {
+            return [
+                'error' => $draftPreview ? '大屏不存在或无权预览' : '大屏不存在或未发布',
+                'status' => 404,
+            ];
+        }
+
+        if ($draftPreview) {
+            if (!$this->canAdminPreview($screen)) {
+                return ['error' => '大屏不存在或无权预览', 'status' => 404];
+            }
+        } elseif (!$this->authorized($request, $screen)) {
+            return ['error' => '无权访问大屏', 'status' => 401];
+        }
+
+        $layout = $draftPreview
+            ? ($screen->draft_layout ?: $screen->layout)
+            : $screen->layout;
+
+        return [
+            'screen' => $screen,
+            'layout' => $this->publicLayout($layout),
+            'draft' => $draftPreview,
+        ];
+    }
+
+    private function screenByCode(string $code, bool $publishedOnly): ?Screen
+    {
+        if (!preg_match('/^[A-Za-z0-9_-]{1,32}$/', $code)) {
+            return null;
+        }
+
+        $query = Screen::where('code', $code);
+        if ($publishedOnly) {
+            $query->where('status', 1);
+        }
+        $screen = $query->findOrEmpty();
+
+        return $screen->isEmpty() ? null : $screen;
+    }
+
+    private function authorized(Request $request, Screen $screen): bool
+    {
+        if ((int) $screen->is_public === 1) {
+            return true;
+        }
+
+        $token = trim((string) ($request->input('token', '') ?: $request->header('x-boardstudio-token', '')));
+        if ($token !== '' && $this->validScreenToken($screen, $token)) {
+            return true;
+        }
+        if ($this->isAdminPreview($request) && $this->canAdminPreview($screen)) {
+            return true;
+        }
+        if ($this->hasActiveScreenTokens($screen)) {
+            return false;
+        }
+
+        $accessToken = trim((string) $screen->access_token);
+        if ($accessToken !== '') {
+            return $token !== '' && hash_equals($accessToken, $token);
+        }
+
+        return $this->canAdminPreview($screen);
+    }
+
+    private function isAdminPreview(Request $request): bool
+    {
+        $value = $request->input('admin_preview', '');
+        return in_array($value, [1, '1', true, 'true'], true);
+    }
+
+    private function isDraftPreview(Request $request): bool
+    {
+        $value = $request->input('draft', '');
+        return in_array($value, [1, '1', true, 'true'], true);
+    }
+
+    private function canAdminPreview(Screen $screen): bool
+    {
+        if (!$this->canUseAdminPreview()) {
+            return false;
+        }
+
+        try {
+            (new ScreenLogic())->read((int) $screen->id);
+            return true;
+        } catch (ApiException) {
+            return false;
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    private function canUseAdminPreview(): bool
+    {
+        $current = getCurrentInfo();
+        if (!is_array($current) || ($current['plat'] ?? '') !== 'saiadmin') {
+            return false;
+        }
+
+        $adminId = (int) ($current['id'] ?? 0);
+        if ($adminId <= 0) {
+            return false;
+        }
+
+        return $adminId === 1 || in_array('boardstudio:screen:read', UserAuthCache::getUserAuth($adminId), true);
+    }
+
+    private function validScreenToken(Screen $screen, string $token): bool
+    {
+        $record = ScreenToken::where('screen_id', (int) $screen->id)
+            ->where('token_hash', hash('sha256', $token))
+            ->where('status', 1)
+            ->whereNull('delete_time')
+            ->findOrEmpty();
+        if ($record->isEmpty() || $this->tokenExpired($record->expire_time ?? null)) {
+            return false;
+        }
+
+        if ($this->shouldTouchToken($record->last_used_time ?? null)) {
+            $record->save(['last_used_time' => date('Y-m-d H:i:s')]);
+        }
+
+        return true;
+    }
+
+    private function hasActiveScreenTokens(Screen $screen): bool
+    {
+        foreach (ScreenToken::where('screen_id', (int) $screen->id)
+            ->where('status', 1)
+            ->whereNull('delete_time')
+            ->select() as $record) {
+            if (!$this->tokenExpired($record->expire_time ?? null)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function tokenExpired(mixed $expireTime): bool
+    {
+        $expireTime = trim((string) $expireTime);
+        return $expireTime !== '' && strtotime($expireTime) <= time();
+    }
+
+    private function shouldTouchToken(mixed $lastUsedTime): bool
+    {
+        $lastUsedTime = trim((string) $lastUsedTime);
+        if ($lastUsedTime === '') {
+            return true;
+        }
+
+        $timestamp = strtotime($lastUsedTime);
+        return !$timestamp || time() - $timestamp >= self::TOKEN_TOUCH_INTERVAL_SECONDS;
+    }
+
+    private function publicLayout(array $layout): array
+    {
+        $components = is_array($layout['components'] ?? null) ? $layout['components'] : [];
+        foreach ($components as $index => $component) {
+            if (!is_array($component)) {
+                continue;
+            }
+
+            $dataset = is_array($component['dataset'] ?? null) ? $component['dataset'] : [];
+            if ($dataset !== []) {
+                $dataset['refresh'] = $this->normalizeRefresh($dataset['refresh'] ?? null);
+                $component['dataset'] = $dataset;
+                $components[$index] = $component;
+            }
+        }
+
+        $layout['components'] = $components;
+        return $layout;
+    }
+
+    private function componentDataset(array $layout, string $cid): array
+    {
+        $components = is_array($layout['components'] ?? null) ? $layout['components'] : [];
+        foreach ($components as $component) {
+            if (!is_array($component) || (string) ($component['id'] ?? '') !== $cid) {
+                continue;
+            }
+
+            $dataset = is_array($component['dataset'] ?? null) ? $component['dataset'] : [];
+            if ($dataset !== []) {
+                $dataset['refresh'] = $this->normalizeRefresh($dataset['refresh'] ?? null);
+            }
+
+            return $dataset;
+        }
+
+        return [];
+    }
+
+    private function ownedTemplate(Screen $screen, QueryTemplate $template): bool
+    {
+        $owner = (int) ($screen->created_by ?? 0);
+        if ($owner <= 0 || (int) ($template->created_by ?? 0) !== $owner) {
+            return false;
+        }
+
+        $datasourceOwner = Datasource::where('id', (int) $template->datasource_id)
+            ->where('status', 1)
+            ->value('created_by');
+
+        return (int) $datasourceOwner === $owner;
+    }
+
+    private function normalizeRefresh(mixed $refresh): int
+    {
+        $refresh = (int) $refresh;
+        if ($refresh <= 0) {
+            $refresh = 30;
+        }
+
+        return min(self::MAX_REFRESH_SECONDS, max(self::MIN_REFRESH_SECONDS, $refresh));
+    }
+
+    private function runtimeParams(Request $request): array
+    {
+        $reserved = [
+            'code' => true,
+            'cid' => true,
+            'token' => true,
+            'admin_preview' => true,
+            'draft' => true,
+        ];
+        $params = $request->input('params', []);
+        $result = is_array($params) ? array_diff_key($params, $reserved) : [];
+
+        foreach ($request->all() as $key => $value) {
+            $key = (string) $key;
+            if (isset($reserved[$key]) || $key === 'params') {
+                continue;
+            }
+            $result[$key] = $value;
+        }
+
+        return $result;
+    }
+
+    private function rateLimited(array $limited): Response
+    {
+        return Responses::fail('请求过于频繁，请稍后再试', 429)->withHeaders([
+            'Retry-After' => (string) max(1, (int) ($limited['retry_after'] ?? 1)),
+            'X-Boardstudio-RateLimit-Scope' => (string) ($limited['scope'] ?? 'runtime'),
+            'X-Boardstudio-RateLimit-Limit' => (string) max(0, (int) ($limited['limit'] ?? 0)),
+            'X-Boardstudio-RateLimit-Window' => (string) max(1, (int) ($limited['window'] ?? 1)),
+        ]);
+    }
+
+    private function cacheRefreshing(): Response
+    {
+        return Responses::fail('数据缓存刷新中，请稍后重试', 429)->withHeaders([
+            'Retry-After' => '3',
+            'X-Boardstudio-Cache-State' => 'refreshing',
+        ]);
+    }
+}

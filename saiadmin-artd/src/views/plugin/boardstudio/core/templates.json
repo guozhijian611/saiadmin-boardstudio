@@ -1,0 +1,345 @@
+[
+  {
+    "type": "screen",
+    "name": "运营数据驾驶舱",
+    "category": "通用运营",
+    "description": "适合订单、内容、支付、告警等运营数据总览的通用大屏模板。",
+    "component_count": 9,
+    "content": {
+      "layout": {
+        "canvas": {
+          "width": 1920,
+          "height": 1080
+        },
+        "bg_config": {
+          "color": "#07111f",
+          "theme": "default",
+          "fit_mode": "contain",
+          "image": "",
+          "image_fit": "cover"
+        },
+        "components": [
+          {
+            "id": "tpl_title",
+            "type": "decor-title",
+            "title": "",
+            "rect": {
+              "x": 40,
+              "y": 24,
+              "w": 1840,
+              "h": 86,
+              "z": 1
+            },
+            "dataset": [],
+            "option": {
+              "text": "运营数据驾驶舱",
+              "subtitle": "Operation Command Center",
+              "variant": "bar",
+              "align": "center",
+              "accent": "#69b7ff"
+            }
+          },
+          {
+            "id": "tpl_total_1",
+            "type": "stat-number",
+            "title": "核心指标",
+            "rect": {
+              "x": 40,
+              "y": 132,
+              "w": 360,
+              "h": 150,
+              "z": 2
+            },
+            "dataset": {
+              "refresh": 30
+            },
+            "option": {
+              "prefix": "",
+              "unit": "单",
+              "decimals": 0
+            }
+          },
+          {
+            "id": "tpl_total_2",
+            "type": "stat-number",
+            "title": "交易金额",
+            "rect": {
+              "x": 430,
+              "y": 132,
+              "w": 360,
+              "h": 150,
+              "z": 2
+            },
+            "dataset": {
+              "refresh": 30
+            },
+            "option": {
+              "prefix": "¥",
+              "unit": "",
+              "decimals": 2
+            }
+          },
+          {
+            "id": "tpl_total_3",
+            "type": "stat-number",
+            "title": "内容数量",
+            "rect": {
+              "x": 820,
+              "y": 132,
+              "w": 360,
+              "h": 150,
+              "z": 2
+            },
+            "dataset": {
+              "refresh": 30
+            },
+            "option": {
+              "prefix": "",
+              "unit": "条",
+              "decimals": 0
+            }
+          },
+          {
+            "id": "tpl_line",
+            "type": "art-line-chart",
+            "title": "趋势分析",
+            "rect": {
+              "x": 40,
+              "y": 320,
+              "w": 720,
+              "h": 330,
+              "z": 3
+            },
+            "dataset": {
+              "refresh": 30
+            },
+            "option": {
+              "showAreaColor": true,
+              "showLegend": false
+            }
+          },
+          {
+            "id": "tpl_bar",
+            "type": "art-bar-chart",
+            "title": "排行分析",
+            "rect": {
+              "x": 800,
+              "y": 320,
+              "w": 520,
+              "h": 330,
+              "z": 3
+            },
+            "dataset": {
+              "refresh": 30
+            },
+            "option": {
+              "showLegend": false
+            }
+          },
+          {
+            "id": "tpl_ring",
+            "type": "art-ring-chart",
+            "title": "结构分布",
+            "rect": {
+              "x": 1360,
+              "y": 320,
+              "w": 520,
+              "h": 330,
+              "z": 3
+            },
+            "dataset": {
+              "refresh": 30
+            },
+            "option": {
+              "showLegend": true,
+              "legendPosition": "right"
+            }
+          },
+          {
+            "id": "tpl_matrix",
+            "type": "status-matrix",
+            "title": "服务状态",
+            "rect": {
+              "x": 40,
+              "y": 690,
+              "w": 620,
+              "h": 330,
+              "z": 3
+            },
+            "dataset": {
+              "refresh": 30
+            },
+            "option": {
+              "labelField": "",
+              "statusField": "",
+              "valueField": "",
+              "groupField": "",
+              "maxRows": 12,
+              "columns": 3,
+              "unit": "",
+              "decimals": 0,
+              "showValue": true,
+              "showStatus": true,
+              "accent": "#23d8ff"
+            }
+          },
+          {
+            "id": "tpl_table",
+            "type": "data-table",
+            "title": "明细列表",
+            "rect": {
+              "x": 700,
+              "y": 690,
+              "w": 1180,
+              "h": 330,
+              "z": 3
+            },
+            "dataset": {
+              "refresh": 30,
+              "mapping": {
+                "tableFields": []
+              }
+            },
+            "option": {
+              "showIndex": true,
+              "rowStripe": true,
+              "maxRows": 8
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "component",
+    "name": "核心指标三联卡",
+    "category": "指标组件",
+    "description": "三张指标卡组合，适合订单数、金额、用户数等顶部核心指标。",
+    "component_count": 3,
+    "content": {
+      "components": [
+        {
+          "id": "tpl_stat_group_1",
+          "type": "stat-number",
+          "title": "今日订单",
+          "rect": {
+            "x": 40,
+            "y": 40,
+            "w": 300,
+            "h": 140,
+            "z": 1
+          },
+          "dataset": {
+            "refresh": 30
+          },
+          "option": {
+            "prefix": "",
+            "unit": "单",
+            "decimals": 0
+          }
+        },
+        {
+          "id": "tpl_stat_group_2",
+          "type": "stat-number",
+          "title": "今日金额",
+          "rect": {
+            "x": 370,
+            "y": 40,
+            "w": 300,
+            "h": 140,
+            "z": 1
+          },
+          "dataset": {
+            "refresh": 30
+          },
+          "option": {
+            "prefix": "¥",
+            "unit": "",
+            "decimals": 2
+          }
+        },
+        {
+          "id": "tpl_stat_group_3",
+          "type": "stat-number",
+          "title": "活跃用户",
+          "rect": {
+            "x": 700,
+            "y": 40,
+            "w": 300,
+            "h": 140,
+            "z": 1
+          },
+          "dataset": {
+            "refresh": 30
+          },
+          "option": {
+            "prefix": "",
+            "unit": "人",
+            "decimals": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "component",
+    "name": "服务健康状态矩阵",
+    "category": "监控组件",
+    "description": "状态矩阵加流光边框，适合服务健康、设备在线、区域运营状态扫描。",
+    "component_count": 2,
+    "content": {
+      "components": [
+        {
+          "id": "tpl_health_border",
+          "type": "decor-flow-border",
+          "title": "",
+          "rect": {
+            "x": 40,
+            "y": 40,
+            "w": 560,
+            "h": 360,
+            "z": 1
+          },
+          "dataset": [],
+          "option": {
+            "variant": "orbit",
+            "accent": "#23d8ff",
+            "secondary": "#ffcf5a",
+            "opacity": 0.86,
+            "speed": 5,
+            "thickness": 2,
+            "glow": true
+          }
+        },
+        {
+          "id": "tpl_health_matrix",
+          "type": "status-matrix",
+          "title": "服务健康度",
+          "rect": {
+            "x": 64,
+            "y": 68,
+            "w": 512,
+            "h": 304,
+            "z": 2
+          },
+          "dataset": {
+            "refresh": 30
+          },
+          "option": {
+            "labelField": "",
+            "statusField": "",
+            "valueField": "",
+            "groupField": "",
+            "maxRows": 12,
+            "columns": 3,
+            "unit": "%",
+            "decimals": 0,
+            "showValue": true,
+            "showStatus": true,
+            "accent": "#69b7ff"
+          }
+        }
+      ]
+    }
+  }
+]
