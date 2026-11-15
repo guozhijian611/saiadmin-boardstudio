@@ -35,20 +35,7 @@ flowchart LR
 
 1. 在 [Releases](https://github.com/guozhijian611/saiadmin-boardstudio/releases) 下载 **`boardstudio-版本号.zip`** 和 `SHA256SUMS.txt`。GitHub 自动生成的 “Source code” 压缩包不是可直接导入的插件包。
 2. 在 SaiAdmin 的插件管理中上传 ZIP 并安装。
-3. 根据宿主提示安装前端依赖。在宿主 `saiadmin-artd/src/main.ts` 增加一次语言注册导入（放在应用挂载前），再重新构建管理端：
-
-   ```ts
-   import.meta.glob('./views/plugin/boardstudio/i18n/host.ts', { eager: true })
-   ```
-
-   宿主 6.1.5 的语言按钮默认会重建页面。为避免插件表单丢失，推荐直接运行随包提供的接入脚本，它会同时补齐上述导入和插件路由的刷新保护：
-
-   ```sh
-   # 在 SaiAdmin server 目录执行；先省略 --apply 查看变更
-   python3 plugin/boardstudio/bin/integrate-frontend.py --frontend ../saiadmin-artd --apply
-   ```
-
-   脚本保留原文件备份并可重复执行；不识别的宿主实现会拒绝修改，需按差异人工接入。该文件随 ZIP 提供，只合并 `boardstudio` 与 `menus.boardstudio` 命名空间，不覆盖宿主词条。宿主没有自动插件语言发现机制，菜单翻译需要此入口；页面本身仍会自动注册。出现 **Board Studio** 菜单后进入大屏管理。
+3. 从 **2.1.1** 起，安装或升级时会自动接入语言注册和插件路由刷新保护，无需手工改文件或运行接入脚本。按宿主提示完成依赖安装并重建管理端，即可进入 **Board Studio**。
 4. 新建大屏 → V2 设计器 → 套用预设或添加组件 → 保存 → 发布与访问。
 
 ```sh
@@ -72,7 +59,7 @@ shasum -a 256 -c SHA256SUMS.txt
 
 数据集默认轮询间隔 30 秒，可设 10–3600 秒；组件绑定可覆盖或只手动刷新。**缓存时间、轮询间隔、页面参数、图表动画是独立设置**，不会定时刷新整个浏览器页面。单次最多 5000 行 / 2 MiB / 100–10000ms。失败保留同查询上次成功值并标记过期，参数改变或权限失效会清空旧结果。
 
-主题与多语言的宿主接入及截图见 [适配说明](docs/theme-i18n.md)。完整安装、备份、凭据与 API 说明见 [插件手册](server/plugin/boardstudio/README.md)。
+自动接入的生命周期与故障恢复见 [自动接入说明](docs/auto-integration.md)。主题与多语言及截图见 [适配说明](docs/theme-i18n.md)。完整安装、备份、凭据与 API 说明见 [插件手册](server/plugin/boardstudio/README.md)。
 
 ## 本地开发
 
@@ -84,9 +71,9 @@ node tools/boardstudio/verify.mjs
 node tools/boardstudio/build-player.mjs
 python3 tools/boardstudio/package.py \
   --skip-build \
-  --output dist/boardstudio-2.1.0.zip \
-  --source-output dist/boardstudio-source-2.1.0.zip
-python3 tools/boardstudio/check-package.py dist/boardstudio-2.1.0.zip
+  --output dist/boardstudio-2.1.1.zip \
+  --source-output dist/boardstudio-source-2.1.1.zip
+python3 tools/boardstudio/check-package.py dist/boardstudio-2.1.1.zip
 ```
 
 `verify.mjs` 运行核心 TypeScript 测试、PHP 纯逻辑测试及插件 ESLint；CI 另外对所有 PHP 文件做语法检查。独立构建仅生成播放器，管理端的 `@/utils/http`、用户状态和路由由宿主提供；本仓库不包含可独立启动的完整管理后台，也不将宿主类型检查冒充为插件单测。
@@ -124,5 +111,3 @@ git push origin v2.2.0
 欢迎通过 [Issues](https://github.com/guozhijian611/saiadmin-boardstudio/issues) 反馈问题或提交 PR，请参考 [贡献指南](CONTRIBUTING.md)；敏感漏洞使用 [安全报告说明](SECURITY.md)。
 
 基于 [B8AIAdmin](https://github.com/guozhijian611/B8AIAdmin) 拆分与重构，感谢 SaiAdmin、Webman、Art Design Pro、Vue、Element Plus 和 ECharts。本项目使用 [MIT](LICENSE)；保留上游版权和依赖许可，详见 [第三方声明](THIRD_PARTY_NOTICES.md)。
-
-语言入口使用可选 glob；卸载插件后没有匹配文件时不会留下缺失模块导入。宿主中的路由刷新保护只作用于插件路由，插件移除后不影响其它页面。

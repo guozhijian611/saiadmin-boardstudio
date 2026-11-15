@@ -6,7 +6,7 @@ use support\think\Db;
 $tables=['boardstudio_screen','boardstudio_screen_version','boardstudio_screen_token','boardstudio_datasource','boardstudio_query_template','boardstudio_retired_templates','boardstudio_dataset','boardstudio_dataset_version','boardstudio_resource_grant','boardstudio_release'];
 foreach($tables as $table)Db::table($table)->count();
 $versions=Db::table('phinxlog_boardstudio')->column('version');
-if(count($versions)!==8)throw new RuntimeException('Expected eight migrations');
+if(count($versions)!==9)throw new RuntimeException('Expected nine migrations');
 foreach(['BoardStudio','BoardStudioDesigner','BoardStudioPresets','BoardStudioQueryTemplate'] as $code) {
  if(Db::table('sa_system_menu')->where('code',$code)->count()!==1)throw new RuntimeException('Missing or duplicate menu: '.$code);
 }
@@ -16,4 +16,4 @@ if(!is_file(getcwd().'/runtime/boardstudio-credentials.key'))throw new RuntimeEx
 (new \plugin\saipackage\app\logic\InstallLogic('boardstudio'))->dependentInstallComplete('npm');
 $state=(new \plugin\saipackage\app\logic\InstallLogic('boardstudio'))->getInfo();
 if((int)$state['state']!==\plugin\saipackage\app\logic\InstallLogic::INSTALLED)throw new RuntimeException('Dependencies not completed');
-echo 'PASS schema, eight migrations, unique menus, retired market, key initialization, installed state '. $state['state']."\n";
+echo 'PASS schema, nine migrations, unique menus, retired market, key initialization, installed state '. $state['state']."\n";

@@ -54,30 +54,26 @@ V2 播放地址 `/app/boardstudio/player/?v=2&code=<编码>`，反向代理有 `
 pnpm --dir saiadmin-artd install --frozen-lockfile
 node tools/boardstudio/verify.mjs
 node tools/boardstudio/build-player.mjs
-python3 tools/boardstudio/package.py --output ./dist/boardstudio-2.1.0.zip
+python3 tools/boardstudio/package.py --output ./dist/boardstudio-2.1.1.zip
 ```
 
 播放器构建产物随包提供。PHP 语法、管理端类型检查、真实 HTTP、浏览器及双库安装生命周期须另行验证；测试脚本位于 `tools/boardstudio/tests`。测试会创建标记数据，带 `--disposable-fixture` 的脚本仅用于独立临时环境。实际发行验收证据见源码包 `docs/boardstudio-v2.md`，开发构建不等于通过最终发行验收。
 
-## 主题与语言接入（2.1.0）
+## 自动主题与语言接入（2.1.1）
 
-后台复用宿主 Element Plus 语义 token 与 vue-i18n 的 zh/en 全局 Composer。安装后在宿主 `saiadmin-artd/src/main.ts` 的应用挂载之前添加：
+安装器复制文件后执行第九个 Phinx 迁移，由 PHP 服务自动接入宿主 `src/main.ts` 的语言注册与 `changeLanguage` 的插件路由刷新保护。前端目录使用 saipackage 的 `FRONTEND_DIR` 解析结果，不依赖临时路径、Python 或额外 shell 命令。正常安装与升级无需手动运行接入脚本；依赖安装与管理端重建仍走宿主原流程。
 
-```ts
-import.meta.glob('./views/plugin/boardstudio/i18n/host.ts', { eager: true })
-```
+后台复用宿主 `--el-*` 语义 token 与 vue-i18n 的 zh/en 全局 Composer。接入只合并插件命名空间，保留宿主默认语言、fallback 以及其它页面刷新行为；用户配置的画布颜色、标题和业务内容独立。播放器使用链接的 lang/theme 初始化界面。
 
-该入口随 ZIP 提供，用于导航菜单启动时的词条注册；无须改动宿主 src/locales。页面本身自动合并命名空间。宿主需要重新构建；不接入该入口时，新菜单 key 无法在首次进入插件前翻译。不要修改默认语言或 fallback 来替代正确注册。
+修改前检查支持的宿主结构与写权限，并在 `server/runtime/boardstudio/frontend-integration/` 内备份源文件。重复安装不会插入重复片段；升级会接管 2.1.0 的已知手动接入。接入本身失败时回退本次已改的宿主文件，安装明确失败，不伪造已安装状态。
 
-播放器是独立应用，使用链接的 lang=zh/en 与 theme=light/dark 初始化控件；画布背景和用户文档独立，不随后台主题重写。若增加宿主语言，应补充插件 catalog 对应资源。
+非空业务库拒绝卸载时，不先修改宿主文件。空库卸载仅移除插件管理的片段，保留其它用户改动；用户自行修改了管理片段时会拒绝自动覆盖。备份保留在 runtime，供排查恢复，不用整份旧备份覆盖宿主新代码。
 
-宿主的语言按钮若含 `reload(50)`，会重建插件页面并丢失未保存输入。接入脚本在宿主 changeLanguage 中仅对 `/boardstudio/` 路由跳过 reload，同时保留 locale 与用户语言持久化、其他页面的原刷新行为：
+仅在需要诊断或修复时，可在 server 目录预览实际接入差异：
 
 ```sh
-# server 目录；默认仅预览 diff，检查后添加 --apply
-python3 plugin/boardstudio/bin/integrate-frontend.py --frontend ../saiadmin-artd --apply
+php plugin/boardstudio/bin/integrate-frontend.php --frontend ../saiadmin-artd
+# 明确需要写入时加 --apply；预览卸载清理时加 --remove
 ```
 
-原文件备份为 `*.boardstudio.bak`；脚本不识别的宿主拒绝修改，不覆盖共享语言文件。此显式接入是完整菜单与无损语言切换的安装步骤。
-
-语言入口使用可选 glob；卸载插件后没有匹配文件时不会留下缺失模块导入。宿主中的路由刷新保护只作用于插件路由，插件移除后不影响其它页面。
+不识别的自定义宿主或不可写目录会使安装失败，需核对宿主实现与部署权限；不要跳过失败迁移直接标记已安装。完整说明见源码包 `docs/auto-integration.md`。
