@@ -110,6 +110,15 @@ class ScreenLogic extends BaseLogic
         $data['access_token'] = '';
         $data['status'] = 2;
         $data['revision'] = 0;
+        $data['published_release_id'] = null;
+        $data['access_mode'] = 'token';
+        if ($owner !== $currentOwner && !empty($data['draft_document'])) {
+            $document = is_array($data['draft_document']) ? $data['draft_document'] : json_decode($data['draft_document'], true);
+            $document['bindings'] = new \stdClass();
+            foreach ($document['nodes'] as &$node) unset($node['binding']);
+            unset($node);
+            $data['draft_document'] = \plugin\boardstudio\app\service\DocumentJson::encode($document);
+        }
         $data['draft_layout'] = $this->normalizeLayout($draftLayout, $width, $height);
         $data['layout'] = $this->normalizeLayout($publishedLayout, $width, $height);
 
@@ -945,6 +954,8 @@ class ScreenLogic extends BaseLogic
 
     private function normalizePayload(array $data, int $ignoreId = 0): array
     {
+        // Publishing pointers, V2 drafts and revision are writable only by their dedicated APIs.
+        $data = array_intersect_key($data, array_flip(['name','code','width','height','bg_config','is_public','remark','layout','draft_layout','status']));
         unset(
             $data['revision'],
             $data['access_token'],

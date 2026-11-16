@@ -6,7 +6,10 @@ export default {
   sources: (params: Record<string, unknown> = {}) =>
     request.get<any>({ url: root + 'sources', params }),
   save: (data: Record<string, unknown>) =>
-    request.post<{ id: number; revision: number }>({ url: root + 'save', data }),
+    request.post<{ id: number; revision: number }>({
+      url: root + (data.id ? 'update' : 'save'),
+      data
+    }),
   preview: (data: Record<string, unknown>) => request.post<any>({ url: root + 'preview', data }),
   execute: (
     id: number,

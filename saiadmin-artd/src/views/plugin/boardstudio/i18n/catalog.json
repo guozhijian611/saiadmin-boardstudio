@@ -1015,5 +1015,16 @@
   "页面数字参数不合法": "Invalid numeric page parameter",
   "页面文本参数不合法": "Invalid text page parameter",
   "页面布尔参数不合法": "Invalid boolean page parameter",
-  "页面参数引用不合法": "Invalid page parameter reference"
+  "页面参数引用不合法": "Invalid page parameter reference",
+  "当前账号没有大屏设计权限": "Your account does not have screen design permission",
+  "未配置有效角色，无法访问数据": "No active role is configured for data access",
+  "角色数据范围配置无效": "Invalid role data scope configuration",
+  "登录账号已失效": "The account is no longer active",
+  "更新数据集请使用修改接口": "Use the update endpoint to modify a dataset",
+  "授权对象不存在或已停用": "The grant subject does not exist or is disabled",
+  "排序字段无效": "Invalid sort field",
+  "排序方向无效": "Invalid sort direction",
+  "接口未声明权限，拒绝访问": "The endpoint has no permission declaration; access denied",
+  "权限不足，无法访问或操作": "Insufficient permission to access or operate",
+  "请选择数据集": "Select a dataset"
 }

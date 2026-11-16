@@ -188,7 +188,7 @@
                   />
                 </ElSelect>
                 <ElButton
-                  v-permission="'boardstudio:query_template:preview'"
+                  v-if="can('boardstudio:query_template:preview')"
                   :disabled="!selectedComponent.dataset.queryTemplateId"
                   :loading="selectedPreviewLoading"
                   @click="previewSelectedData"
@@ -1494,6 +1494,8 @@
 </template>
 
 <script setup lang="ts">
+  import { useBoardPermissions } from '../core/permissions'
+  const { can } = useBoardPermissions()
   import { useBoardI18n } from '../i18n'
   const { bt, localizedOptions, locale } = useBoardI18n()
 

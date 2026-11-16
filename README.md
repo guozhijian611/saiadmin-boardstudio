@@ -18,6 +18,7 @@
 - **数据分层**：数据源保管连接；版本化数据集定义查询；组件通过绑定实例和字段映射使用结果。支持 MySQL 只读参数 SQL、同源可视化关联与 HTTP GET/POST。
 - **运行调度**：参数联动、共享取数、每屏最多 4 个并发、隐藏暂停、失败退避、过期结果提示、服务端缓存及请求合并。
 - **发布与权限**：不可变发布快照、历史切换、公开 / 登录授权 / 访问令牌；数据源与数据集授权、观看者用户/部门行级范围、凭据加密与接口脱敏。
+- **系统权限**：40 个菜单/按钮/API 权限点，复用宿主角色的五种数据范围；后台查询、统计与批量操作均受限，连接和数据集另检查资源授权。
 - **安装保护**：Phinx 迁移、升级保留原数据、非空卸载保护；与原 `saiboard` 使用不同命名空间。
 
 ```mermaid
@@ -51,6 +52,8 @@ shasum -a 256 -c SHA256SUMS.txt
 
 升级前备份数据库、插件文件及凭据密钥。旧大屏显式转换为 V2，不在安装时覆盖。存在业务数据时卸载会拒绝；不要为了卸载直接删除业务表。
 
+**2.2.0 权限升级**：后台从旧版“管理员全部、其他人仅本人”改为按系统角色 data_scope 配置。值 1 表示全部，5 表示本人；升级保留现有角色值和记录创建者，请先核对部署中的角色范围。数据集新建与修改已分离，已有调用更新数据集时改用 `POST /Dataset/update`。新权限从旧版实际对应的接口授权迁移，不给所有角色开放。完整规则、权限映射和验收见 [系统与数据权限](docs/permissions.md)。
+
 ## 数据与刷新如何配置
 
 **添加数据源 → 创建数据集 → 预览字段 → 保存版本 → 组件绑定 → 发布**。
@@ -71,9 +74,9 @@ node tools/boardstudio/verify.mjs
 node tools/boardstudio/build-player.mjs
 python3 tools/boardstudio/package.py \
   --skip-build \
-  --output dist/boardstudio-2.1.1.zip \
-  --source-output dist/boardstudio-source-2.1.1.zip
-python3 tools/boardstudio/check-package.py dist/boardstudio-2.1.1.zip
+  --output dist/boardstudio-2.2.0.zip \
+  --source-output dist/boardstudio-source-2.2.0.zip
+python3 tools/boardstudio/check-package.py dist/boardstudio-2.2.0.zip
 ```
 
 `verify.mjs` 运行核心 TypeScript 测试、PHP 纯逻辑测试及插件 ESLint；CI 另外对所有 PHP 文件做语法检查。独立构建仅生成播放器，管理端的 `@/utils/http`、用户状态和路由由宿主提供；本仓库不包含可独立启动的完整管理后台，也不将宿主类型检查冒充为插件单测。

@@ -3,12 +3,15 @@
 Dependency installation is intentionally separate; never marks dependencies installed.
 """
 from pathlib import Path
+import configparser,zipfile
 import argparse,json,time,uuid,urllib.request,urllib.error,hashlib
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--url',required=True);p.add_argument('--token-file',type=Path,required=True)
 p.add_argument('--zip',type=Path,required=True);p.add_argument('--repeat',action='store_true')
 p.add_argument('--disposable-fixture',required=True,action='store_true')
 a=p.parse_args();token=a.token_file.read_text().strip();payload=a.zip.read_bytes()
+with zipfile.ZipFile(a.zip) as package:
+ info=configparser.ConfigParser(interpolation=None);info.read_string('[plugin]\n'+package.read('info.ini').decode());expected=info['plugin']['version']
 def request(path,data=None,upload=False):
  headers={'Authorization':'Bearer '+token}
  if upload:
@@ -18,6 +21,14 @@ def request(path,data=None,upload=False):
  try:r=urllib.request.urlopen(urllib.request.Request(a.url.rstrip('/')+path,data=data,headers=headers),timeout=45)
  except urllib.error.HTTPError as e:r=e
  return json.load(r)
+for _ in range(40):
+ try:
+  ready=request('/core/system/user')
+  if ready.get('code')==200:break
+  if ready.get('code')==401:raise RuntimeError('Fixture login expired; renew the local test token before uploading')
+ except (urllib.error.URLError,ConnectionError,json.JSONDecodeError):pass
+ time.sleep(.25)
+else:raise RuntimeError('Authenticated host did not become ready; verify the current published backend port')
 result=request('/app/saipackage/install/upload',upload=True)
 if a.repeat:
  assert result['code']!=200,'Same-version upload unexpectedly accepted'
@@ -29,11 +40,15 @@ try:
  print('PASS upload and install response',result['data'].get('state') if isinstance(result.get('data'),dict) else '')
 except (urllib.error.URLError,ConnectionError,json.JSONDecodeError) as e:
  print('Install response interrupted by reload; verifying state via API:',type(e).__name__)
-for _ in range(50):
+last_state=None
+for _ in range(100):
  try:
+  listing=request('/app/saipackage/install/index')
+  plugin=next((item for item in listing.get('data',{}).get('data',[]) if item.get('app')=='boardstudio'),{})
+  last_state=plugin.get('state')
   result=request('/app/boardstudio/admin/Screen/index')
-  if result['code']==200:break
+  if result['code']==200 and int(last_state or 0) in [1,4] and plugin.get('version')==expected:break
  except (urllib.error.URLError,ConnectionError,json.JSONDecodeError):pass
  time.sleep(.3)
-else:raise AssertionError('Plugin route did not become available')
-print('PASS plugin route active; SHA256',hashlib.sha256(payload).hexdigest())
+else:raise AssertionError('Plugin did not complete installation/migrations; route availability alone is insufficient. Last state='+str(last_state))
+print('PASS plugin route and installed/dependency state confirmed; SHA256',hashlib.sha256(payload).hexdigest())

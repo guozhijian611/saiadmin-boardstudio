@@ -1,5 +1,6 @@
 import { useI18n, type Composer } from 'vue-i18n'
 import catalog from './catalog.json'
+import permissionTitles from './permissions.json'
 
 const translations: Record<string, string> = catalog
 const registered = new WeakSet<object>()
@@ -43,8 +44,14 @@ export function registerBoardMessages(composer: Composer) {
     composer.mergeLocaleMessage(locale, {
       boardstudio: messages,
       menus: {
-        boardstudio:
-          locale === 'zh'
+        boardstudio: {
+          actions: Object.fromEntries(
+            Object.entries(permissionTitles).map(([key, value]) => [
+              key,
+              value[locale as 'zh' | 'en']
+            ])
+          ),
+          ...(locale === 'zh'
             ? {
                 root: 'Board Studio',
                 screens: '大屏管理',
@@ -64,7 +71,8 @@ export function registerBoardMessages(composer: Composer) {
                 sources: 'Data sources',
                 queries: 'Query templates',
                 editor: 'Screen editor'
-              }
+              })
+        }
       }
     })
   }

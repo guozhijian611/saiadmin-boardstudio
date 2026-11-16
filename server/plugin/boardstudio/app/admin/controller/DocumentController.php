@@ -82,7 +82,7 @@ final class DocumentController extends BaseController
     #[Apidoc\Param('id', type:'int', require:true, desc:'大屏 ID')]
     #[Apidoc\Param('revision', type:'int', require:false, desc:'修改所需修订号')]
     #[Apidoc\Returned('data', type:'object', desc:'切换发布版本结果')]
-    #[Permission('切换发布版本', 'boardstudio:screen:publish')]
+    #[Permission('切换发布版本', 'boardstudio:screen:restoreVersion')]
     public function activate(Request $request): Response { $this->validate('activateV2',$request->post()); return $this->success($this->logic->activate((int)$request->post('id'),(int)$request->post('releaseId'),(int)$request->post('revision'))); }
 
 }

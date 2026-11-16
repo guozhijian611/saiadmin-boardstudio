@@ -1,6 +1,11 @@
 <template>
   <div v-if="loading" v-loading="loading" style="height: 80vh" />
   <ElResult v-else-if="error" icon="error" :title="bt('文档加载失败')" :sub-title="error" />
+  <ElResult
+    v-else-if="!can('boardstudio:screen:saveLayout')"
+    icon="info"
+    :title="bt('当前账号没有大屏设计权限')"
+  />
   <div v-else-if="document && !converted" class="conversion">
     <h2>{{ bt('转换为 V2 文档') }}</h2>
     <p>{{ bt('将旧布局复制为嵌套文档。保存 V2 文档之前，不会修改服务器数据。') }}</p>
@@ -26,6 +31,8 @@
 <script setup lang="ts">
   import { useBoardI18n } from '../i18n'
   const { bt } = useBoardI18n()
+  import { useBoardPermissions } from '../core/permissions'
+  const { can } = useBoardPermissions()
 
   import { onMounted, ref, shallowRef, watch } from 'vue'
   import { useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
@@ -75,6 +82,7 @@
     converted.value = true
   }
   async function save(value: BoardDocument) {
+    if (!can('boardstudio:screen:saveLayout')) return
     const result = await request.post<any>({
       url: '/app/boardstudio/admin/Document/save',
       data: { id, revision: revision.value, document: value }

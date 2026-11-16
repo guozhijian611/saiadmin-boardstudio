@@ -63,9 +63,14 @@
       <ElButton size="small" @click="preview = !preview">{{
         preview ? bt('返回设计') : bt('预览布局')
       }}</ElButton>
-      <ElButton size="small" :loading="saving" type="primary" @click="save">{{
-        bt('保存文档')
-      }}</ElButton>
+      <ElButton
+        v-if="can('boardstudio:screen:saveLayout')"
+        size="small"
+        :loading="saving"
+        type="primary"
+        @click="save"
+        >{{ bt('保存文档') }}</ElButton
+      >
     </header>
     <div v-if="!preview" class="selection-tools">
       <span v-if="selectedIds.length > 1">{{
@@ -202,6 +207,8 @@
   </section>
 </template>
 <script setup lang="ts">
+  import { useBoardPermissions } from '../core/permissions'
+  const { can } = useBoardPermissions()
   import { useBoardI18n } from '../i18n'
   const { bt } = useBoardI18n()
 

@@ -23,12 +23,14 @@
       <ArtTableHeader :loading="loading" @refresh="loadData">
         <template #left>
           <ElSpace wrap>
-            <ElButton v-permission="'boardstudio:screen:save'" @click="openDialog()">
+            <ElButton v-if="can('boardstudio:screen:save')" @click="openDialog()">
               <template #icon><ArtSvgIcon icon="ri:add-fill" /></template
               >{{ bt('新增大屏') }}</ElButton
             >
             <ElButton
-              v-permission="'boardstudio:screen:generateFromTable'"
+              v-if="
+                can('boardstudio:screen:generateFromTable') && can('boardstudio:datasource:index')
+              "
               type="primary"
               @click="openAutoDialog"
             >
@@ -73,57 +75,54 @@
           <template #default="{ row }">
             <ElSpace>
               <ElButton
-                v-permission="'boardstudio:screen:saveLayout'"
+                v-if="can('boardstudio:screen:saveLayout')"
                 size="small"
                 @click="goDesigner(row)"
                 >{{ bt('V2 设计器') }}</ElButton
               >
               <ElButton
-                v-permission="'boardstudio:screen:read'"
+                v-if="can('boardstudio:screen:read')"
                 size="small"
                 @click="openRuntime(row)"
                 >{{ bt('发布预览') }}</ElButton
               >
               <SaButton
-                v-permission="'boardstudio:screen:update'"
+                v-if="can('boardstudio:screen:update')"
                 type="secondary"
                 @click="openDialog(row)"
               />
-              <ElButton
-                v-permission="'boardstudio:screen:read'"
-                size="small"
-                @click="goEditor(row)"
-                >{{ bt('旧版编辑器') }}</ElButton
-              >
+              <ElButton v-if="can('boardstudio:screen:read')" size="small" @click="goEditor(row)">{{
+                bt('旧版编辑器')
+              }}</ElButton>
               <ElDropdown>
                 <SaButton type="info" />
                 <template #dropdown>
                   <ElDropdownMenu>
                     <ElDropdownItem
-                      v-permission="'boardstudio:screen:publish'"
+                      v-if="can('boardstudio:screen:publish')"
                       @click="publish(row)"
                       >{{ bt('发布') }}</ElDropdownItem
                     >
-                    <ElDropdownItem v-permission="'boardstudio:screen:copy'" @click="copy(row)">{{
+                    <ElDropdownItem v-if="can('boardstudio:screen:copy')" @click="copy(row)">{{
                       bt('复制')
                     }}</ElDropdownItem>
                     <ElDropdownItem
-                      v-permission="'boardstudio:screen:versions'"
+                      v-if="can('boardstudio:screen:versions')"
                       @click="openVersions(row)"
                       >{{ bt('版本') }}</ElDropdownItem
                     >
                     <ElDropdownItem
-                      v-permission="'boardstudio:screen:tokens'"
+                      v-if="can('boardstudio:screen:tokens')"
                       @click="openTokens(row)"
                       >{{ bt('访问令牌') }}</ElDropdownItem
                     >
                     <ElDropdownItem
-                      v-permission="'boardstudio:screen:index'"
+                      v-if="can('boardstudio:screen:index')"
                       @click="openMetrics(row)"
                       >{{ bt('运行统计') }}</ElDropdownItem
                     >
                     <ElDropdownItem
-                      v-permission="'boardstudio:screen:destroy'"
+                      v-if="can('boardstudio:screen:destroy')"
                       @click="deleteRow(row)"
                       >{{ bt('删除') }}</ElDropdownItem
                     >
@@ -190,7 +189,7 @@
       <template #footer>
         <ElButton @click="dialogVisible = false">{{ bt('取消') }}</ElButton>
         <ElButton
-          v-permission="form.id ? 'boardstudio:screen:update' : 'boardstudio:screen:save'"
+          v-if="can(form.id ? 'boardstudio:screen:update' : 'boardstudio:screen:save')"
           type="primary"
           @click="submit"
           >{{ bt('提交') }}</ElButton
@@ -364,7 +363,7 @@
       <template #footer>
         <ElButton @click="autoDialogVisible = false">{{ bt('取消') }}</ElButton>
         <ElButton
-          v-permission="'boardstudio:screen:generateFromTable'"
+          v-if="can('boardstudio:screen:generateFromTable') && can('boardstudio:datasource:index')"
           type="primary"
           :loading="autoSubmitting"
           @click="generateFromTable"
@@ -452,14 +451,14 @@
           <template #default="{ row }">
             <ElSpace>
               <ElButton
-                v-permission="'boardstudio:screen:restoreVersion'"
+                v-if="can('boardstudio:screen:restoreVersion')"
                 size="small"
                 type="primary"
                 @click="restoreVersion(row)"
                 >{{ bt('恢复') }}</ElButton
               >
               <ElButton
-                v-permission="'boardstudio:screen:deleteVersion'"
+                v-if="can('boardstudio:screen:deleteVersion')"
                 size="small"
                 type="danger"
                 @click="deleteVersion(row)"
@@ -496,7 +495,7 @@
           clearable
         />
         <ElButton
-          v-permission="'boardstudio:screen:createToken'"
+          v-if="can('boardstudio:screen:createToken')"
           type="primary"
           :loading="tokenCreating"
           @click="createToken"
@@ -536,20 +535,20 @@
           <template #default="{ row }">
             <ElSpace>
               <ElButton
-                v-permission="'boardstudio:screen:resetToken'"
+                v-if="can('boardstudio:screen:resetToken')"
                 size="small"
                 @click="resetToken(row)"
                 >{{ bt('重置') }}</ElButton
               >
               <ElButton
-                v-permission="'boardstudio:screen:changeTokenStatus'"
+                v-if="can('boardstudio:screen:changeTokenStatus')"
                 size="small"
                 @click="changeTokenStatus(row, row.status === 1 ? 2 : 1)"
               >
                 {{ row.status === 1 ? bt('停用') : bt('启用') }}
               </ElButton>
               <ElButton
-                v-permission="'boardstudio:screen:deleteToken'"
+                v-if="can('boardstudio:screen:deleteToken')"
                 size="small"
                 type="danger"
                 @click="deleteToken(row)"
@@ -568,6 +567,8 @@
 </template>
 
 <script setup lang="ts">
+  import { useBoardPermissions } from '../core/permissions'
+  const { can } = useBoardPermissions()
   import { useBoardI18n } from '../i18n'
   const { bt, localizedOptions, locale, dateCell } = useBoardI18n()
 
@@ -748,6 +749,10 @@
   }
 
   const loadDatasourceOptions = async () => {
+    if (!can('boardstudio:datasource:index')) {
+      datasourceOptions.value = []
+      return
+    }
     datasourceOptions.value = await datasourceApi.options()
   }
 
@@ -1274,7 +1279,7 @@
   }
 
   onMounted(async () => {
-    await Promise.all([loadData(), loadDatasourceOptions()])
+    await loadData()
   })
 </script>
 

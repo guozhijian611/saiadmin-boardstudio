@@ -16,7 +16,7 @@
 
       <ArtTableHeader :loading="loading" @refresh="loadData">
         <template #left>
-          <ElButton v-permission="'boardstudio:datasource:save'" @click="openDialog()">
+          <ElButton v-if="can('boardstudio:datasource:save')" @click="openDialog()">
             <template #icon><ArtSvgIcon icon="ri:add-fill" /></template
             >{{ bt('新增数据源') }}</ElButton
           >
@@ -37,7 +37,7 @@
         <ElTableColumn :label="bt('状态')" width="110">
           <template #default="{ row }">
             <ElSwitch
-              v-permission="'boardstudio:datasource:changeStatus'"
+              v-if="can('boardstudio:datasource:changeStatus')"
               v-model="row.status"
               :active-value="1"
               :inactive-value="2"
@@ -49,20 +49,17 @@
           <template #default="{ row }">
             <ElSpace>
               <ResourceGrants resource-type="datasource" :resource-id="row.id" />
+              <ElButton v-if="can('boardstudio:datasource:test')" size="small" @click="test(row)">{{
+                bt('测试')
+              }}</ElButton>
               <ElButton
-                v-permission="'boardstudio:datasource:test'"
-                size="small"
-                @click="test(row)"
-                >{{ bt('测试') }}</ElButton
-              >
-              <ElButton
-                v-permission="'boardstudio:datasource:update'"
+                v-if="can('boardstudio:datasource:update')"
                 size="small"
                 @click="openDialog(row)"
                 >{{ bt('编辑') }}</ElButton
               >
               <ElButton
-                v-permission="'boardstudio:datasource:destroy'"
+                v-if="can('boardstudio:datasource:destroy')"
                 type="danger"
                 size="small"
                 @click="deleteRow(row)"
@@ -211,13 +208,13 @@
       <template #footer>
         <ElButton @click="dialogVisible = false">{{ bt('取消') }}</ElButton>
         <ElButton
-          v-permission="'boardstudio:datasource:test'"
+          v-if="can('boardstudio:datasource:test')"
           :loading="testLoading"
           @click="test(form)"
           >{{ bt('测试') }}</ElButton
         >
         <ElButton
-          v-permission="form.id ? 'boardstudio:datasource:update' : 'boardstudio:datasource:save'"
+          v-if="can(form.id ? 'boardstudio:datasource:update' : 'boardstudio:datasource:save')"
           type="primary"
           @click="submit"
           >{{ bt('提交') }}</ElButton
@@ -228,6 +225,8 @@
 </template>
 
 <script setup lang="ts">
+  import { useBoardPermissions } from '../core/permissions'
+  const { can } = useBoardPermissions()
   import { useBoardI18n } from '../i18n'
   const { bt } = useBoardI18n()
 

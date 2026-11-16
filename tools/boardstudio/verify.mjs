@@ -11,6 +11,7 @@ for (const [command, args] of [
   ['php', ['-d', 'zend.assertions=1', 'tools/boardstudio/tests/document.php']],
   ['php', ['-d', 'zend.assertions=1', 'tools/boardstudio/tests/dataset.php']],
   ['php', ['-d', 'zend.assertions=1', 'tools/boardstudio/tests/credentials.php']],
+  ['php', ['tools/boardstudio/tests/permissions.php']],
   [path.join(root, 'saiadmin-artd/node_modules/.bin/eslint'), ['src/views/plugin/boardstudio']]
 ]) {
   const cwd = command.endsWith('/eslint') ? path.join(root, 'saiadmin-artd') : root

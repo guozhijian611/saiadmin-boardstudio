@@ -15,21 +15,27 @@ class FrontendIntegration
     private const HEADER_END = '// </boardstudio:language-refresh>';
     private const GLOB = "import.meta.glob('./views/plugin/boardstudio/i18n/host.ts', { eager: true })";
     private const GUARD = "if (!router.currentRoute.value.path.startsWith('/boardstudio/')) reload(50)";
+    private const ROLE_LABEL = '<span>{{ data.label }}</span>';
+    private const ROLE_PATCH = '<span><!-- <boardstudio:permission-label> -->{{ __boardstudioMenuTitle(data.label) }}<!-- </boardstudio:permission-label> --></span>';
+    private const ROLE_IMPORT = "  // <boardstudio:permission-label-import>\n  import { formatMenuTitle as __boardstudioMenuTitle } from '@/utils/router'\n  // </boardstudio:permission-label-import>\n";
     private string $root;
     private string $stateDir;
+    private ?string $roleBackend;
 
-    public function __construct(string $frontend, string $runtime)
+    public function __construct(string $frontend, string $runtime, ?string $roleBackend = null)
     {
         $root = realpath($frontend);
         if ($root === false || !is_dir($root)) throw new RuntimeException('Board Studio 自动接入失败：宿主前端目录不存在：'.$frontend);
         $this->root = $root;
+        $this->roleBackend = $roleBackend;
         $this->stateDir = rtrim($runtime, '/\\').'/frontend-integration/'.hash('sha256', $root);
     }
 
-    public static function host(): self
+    public static function host(bool $roleMenuCompatibility = false): self
     {
         // Same resolver used by saipackage to copy the frontend and update package.json.
-        return new self(\plugin\saipackage\app\logic\InstallLogic::frontendDir(), runtime_path().'/boardstudio');
+        return new self(\plugin\saipackage\app\logic\InstallLogic::frontendDir(), runtime_path().'/boardstudio',
+            $roleMenuCompatibility ? base_path().'/plugin/saiadmin/app/logic/system/SystemRoleLogic.php' : null);
     }
 
     public function apply(): void { $this->synchronize(false); }
@@ -42,7 +48,9 @@ class FrontendIntegration
         $paths = [
             'main' => $this->root.'/src/main.ts',
             'header' => $this->root.'/src/components/core/layouts/art-header-bar/index.vue',
+            'role' => $this->root.'/src/views/system/role/modules/permission-dialog.vue',
         ];
+        if ($this->roleBackend !== null) $paths['role_backend']=$this->roleBackend;
         $original = [];
         foreach ($paths as $key => $path) {
             if (!is_file($path) || is_link($path) || filesize($path) > 2 * 1024 * 1024) throw new RuntimeException('Board Studio 自动接入失败：不支持的宿主文件：'.$path);
@@ -53,7 +61,9 @@ class FrontendIntegration
         $updated = [
             'main' => $this->main($original['main'], $remove),
             'header' => $this->header($original['header'], $remove),
+            'role' => $this->role($original['role'], $remove),
         ];
+        if ($this->roleBackend !== null) $updated['role_backend']=RoleMenuCompatibility::transform($original['role_backend'],$remove);
         $changes = [];
         foreach ($paths as $key => $path) if ($original[$key] !== $updated[$key]) {
             if (!is_writable($path) || !is_writable(dirname($path)) || !(fileperms($path) & 0222) || !(fileperms(dirname($path)) & 0222)) throw new RuntimeException('Board Studio 自动接入失败：宿主文件或目录不可写：'.$path);
@@ -147,6 +157,30 @@ class FrontendIntegration
             flock($lock, LOCK_UN);
             fclose($lock);
         }
+    }
+
+    private function role(string $source, bool $remove): string
+    {
+        $nl = str_contains($source, "\r\n") ? "\r\n" : "\n";
+        $import = str_replace("\n", $nl, self::ROLE_IMPORT);
+        if (str_contains($source, 'boardstudio:permission-label')) {
+            if (substr_count($source, self::ROLE_PATCH)!==1 || substr_count($source,$import)!==1
+                || substr_count($source,'<!-- <boardstudio:permission-label> -->')!==1
+                || substr_count($source,'<!-- </boardstudio:permission-label> -->')!==1
+                || substr_count($source,'// <boardstudio:permission-label-import>')!==1
+                || substr_count($source,'// </boardstudio:permission-label-import>')!==1)
+                throw new RuntimeException('Board Studio 角色权限标签接入片段已被修改，拒绝覆盖');
+            return $remove ? str_replace([self::ROLE_PATCH,$import],[self::ROLE_LABEL,''],$source) : $source;
+        }
+        if ($remove) return $source;
+        // An already localized host needs no managed fragment.
+        if (str_contains($source,'<span>{{ formatMenuTitle(data.label) }}</span>')
+            && preg_match("~import\\s*\\{\\s*formatMenuTitle\\s*\\}\\s*from\\s*['\"]@/utils/router['\"]~",$source)) return $source;
+        $script = '<script setup lang="ts">';
+        if (substr_count($source,self::ROLE_LABEL)!==1 || substr_count($source,$script.$nl)!==1 || str_contains($source,'__boardstudioMenuTitle'))
+            throw new RuntimeException('Board Studio 自动接入失败：不支持的角色菜单权限标签结构');
+        $source = str_replace(self::ROLE_LABEL,self::ROLE_PATCH,$source);
+        return str_replace($script.$nl,$script.$nl.$import,$source);
     }
 
     protected function writeAtomic(string $path, string $content): void

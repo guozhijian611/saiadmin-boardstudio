@@ -1,5 +1,7 @@
 <template>
-  <ElButton type="success" @click="open">{{ bt('发布与访问') }}</ElButton>
+  <ElButton v-if="can('boardstudio:screen:read')" type="success" @click="open">{{
+    bt('发布与访问')
+  }}</ElButton>
   <ElDialog v-model="visible" :title="bt('发布与访问')" width="720px">
     <ElAlert
       v-if="dirty"
@@ -33,6 +35,7 @@
         bt('我确认发布以上示例数据组件')
       }}</ElCheckbox>
       <ElButton
+        v-if="can('boardstudio:screen:publish')"
         type="primary"
         :loading="busy"
         :disabled="
@@ -50,11 +53,13 @@
       >{{ bt('播放地址：')
       }}<a :href="url.toString()" target="_blank" rel="noopener">{{ bt('打开发布大屏') }}</a></p
     >
-    <template v-if="mode === 'token'">
+    <template v-if="mode === 'token' && can('boardstudio:screen:tokens')">
       <h4>{{ bt('访问令牌') }}</h4>
-      <ElInput v-model="tokenName" :placeholder="bt('令牌名称')" /><ElButton @click="createToken">{{
-        bt('创建令牌')
-      }}</ElButton>
+      <ElInput v-model="tokenName" :placeholder="bt('令牌名称')" /><ElButton
+        v-if="can('boardstudio:screen:createToken')"
+        @click="createToken"
+        >{{ bt('创建令牌') }}</ElButton
+      >
       <p v-if="shareLink"
         >{{ bt('请保存本次链接，完整令牌只显示一次：') }}<ElInput :model-value="shareLink" readonly
       /></p>
@@ -64,25 +69,36 @@
           :label="bt('前缀')"
         /><ElTableColumn prop="status" :label="bt('状态')" /><ElTableColumn :label="bt('操作')"
           ><template #default="{ row }"
-            ><ElButton size="small" @click="disableToken(row.id)">{{
-              bt('停用')
-            }}</ElButton></template
+            ><ElButton
+              v-if="can('boardstudio:screen:changeTokenStatus')"
+              size="small"
+              @click="disableToken(row.id)"
+              >{{ bt('停用') }}</ElButton
+            ></template
           ></ElTableColumn
         ></ElTable
       >
     </template>
-    <ResourceGrants v-if="mode === 'login'" resource-type="screen" :resource-id="screenId" />
+    <ResourceGrants
+      v-if="mode === 'login' && canManageGrants"
+      resource-type="screen"
+      :resource-id="screenId"
+    />
     <h4>{{ bt('发布历史') }}</h4>
-    <ElTable :data="releases" size="small"
+    <ElTable v-if="can('boardstudio:screen:versions')" :data="releases" size="small"
       ><ElTableColumn prop="id" :label="bt('版本 ID')" /><ElTableColumn
         prop="create_time"
         :formatter="dateCell"
         :label="bt('发布时间')"
       /><ElTableColumn :label="bt('操作')"
         ><template #default="{ row }"
-          ><ElButton size="small" :disabled="dirty" @click="activate(row.id)">{{
-            bt('切换到此版本')
-          }}</ElButton></template
+          ><ElButton
+            v-if="can('boardstudio:screen:restoreVersion')"
+            size="small"
+            :disabled="dirty"
+            @click="activate(row.id)"
+            >{{ bt('切换到此版本') }}</ElButton
+          ></template
         ></ElTableColumn
       ></ElTable
     >
@@ -92,6 +108,8 @@
 <script setup lang="ts">
   import { useBoardI18n } from '../i18n'
   const { bt, locale, dateCell } = useBoardI18n()
+  import { useBoardPermissions } from '../core/permissions'
+  const { can } = useBoardPermissions()
 
   import { computed, ref } from 'vue'
   import { ElMessage } from 'element-plus'
@@ -102,6 +120,7 @@
   const props = defineProps<{ screenId: number; code: string; dirty: boolean; revision: number }>()
   const emit = defineEmits<{ revision: [value: number] }>()
   const visible = ref(false),
+    canManageGrants = ref(false),
     busy = ref(false),
     loading = ref(false),
     mode = ref('token'),
@@ -123,11 +142,15 @@
   })
   async function refresh() {
     const [history, list] = await Promise.all([
-      request.get<any>({
-        url: '/app/boardstudio/admin/Document/releases',
-        params: { id: props.screenId }
-      }),
-      screenApi.tokens({ id: props.screenId })
+      can('boardstudio:screen:versions')
+        ? request.get<any>({
+            url: '/app/boardstudio/admin/Document/releases',
+            params: { id: props.screenId }
+          })
+        : Promise.resolve({ items: [] }),
+      can('boardstudio:screen:tokens')
+        ? screenApi.tokens({ id: props.screenId })
+        : Promise.resolve([])
     ])
     releases.value = history.items
     tokens.value = list
@@ -138,11 +161,12 @@
     loading.value = true
     check.value = { errors: [], warnings: [] }
     try {
-      const current = await request.get<{ accessMode: string }>({
+      const current = await request.get<{ accessMode: string; canManageGrants: boolean }>({
         url: '/app/boardstudio/admin/Document/read',
         params: { id: props.screenId }
       })
       mode.value = current.accessMode || 'token'
+      canManageGrants.value = current.canManageGrants
       check.value = await request.get<any>({
         url: '/app/boardstudio/admin/Document/check',
         params: { id: props.screenId }

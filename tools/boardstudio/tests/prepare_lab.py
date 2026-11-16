@@ -9,16 +9,41 @@ p.add_argument('--lab',type=Path,required=True)
 p.add_argument('--lab-script',type=Path,required=True)
 a=p.parse_args();lab=a.lab.resolve();meta=json.loads((lab/'lab.json').read_text())
 assert lab.name==meta['project'] and lab.name.startswith('sai6lab-')
+server=lab/'app'/meta['backend']
+if (server/'.env').exists(): raise RuntimeError('Lab is already initialized; create another lab instead of reinstalling core')
 def compose(*args):return subprocess.check_output(['python3',str(a.lab_script),'compose',str(lab),*args],text=True)
+# Production daemon mode does not hot-reload PHP while an install copies its payload.
+# Keep the installer's real reload; disable only the development file watcher in this lab.
+process=server/'config/process.php';source=process.read_text()
+watcher="'enable_file_monitor' => !in_array('-d', $argv) && DIRECTORY_SEPARATOR === '/',"
+replacement="'enable_file_monitor' => false, // disposable plugin installation lab"
+if watcher in source:
+ process.write_text(source.replace(watcher,replacement,1));compose('restart','backend')
+elif replacement not in source: raise RuntimeError('Unsupported development file watcher configuration')
 url='http://'+compose('port','backend','8787').strip()
 for _ in range(40):
  try:urllib.request.urlopen(url+'/core/install',timeout=2);break
  except Exception:time.sleep(.3)
 else:raise RuntimeError('Lab install page did not start')
 db=meta['db']
+# PostgreSQL's initial Unix-socket server may pass pg_isready before its TCP listener starts.
+port=5432 if db=='pgsql' else 3306
+for _ in range(60):
+ probe=subprocess.run(['python3',str(a.lab_script),'compose',str(lab),'exec','-T','backend','php','-r',f'exit(@fsockopen("db",{port}) ? 0 : 1);'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+ if probe.returncode==0: break
+ time.sleep(.5)
+else: raise RuntimeError('Database TCP listener did not become ready')
 params={'username':'postgres' if db=='pgsql' else 'root','pass'+'word':(lab/'db-secret').read_text().strip(),'database':'saiadmin','host':'db','port':5432 if db=='pgsql' else 3306,'dbType':db,'dataType':'pure'}
 result=json.load(urllib.request.urlopen(url+'/core/install/install',urllib.parse.urlencode(params).encode(),timeout=90))
 assert result['code']==200, result.get('message')
+# Core install sends SIGUSR1 before its response; don't start plugin DDL in a worker
+# that is already scheduled to be killed by that reload's stop timeout.
+compose('restart','backend')
+url='http://'+compose('port','backend','8787').strip()
+for _ in range(50):
+ try:urllib.request.urlopen(url+'/core/install',timeout=2);break
+ except Exception:time.sleep(.3)
+else:raise RuntimeError('Host did not restart after core initialization')
 (lab/'url').write_text(url)
 server=lab/'app'/meta['backend']
 (server/'test-token.php').write_text("<?php require __DIR__.'/vendor/autoload.php';require __DIR__.'/support/bootstrap.php';file_put_contents(__DIR__.'/test-token.json',json_encode(\\Tinywan\\Jwt\\JwtToken::generateToken(['id'=>1,'plat'=>'saiadmin','username'=>'admin'])));")

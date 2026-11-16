@@ -9,7 +9,7 @@ use Webman\Route;
 Route::group('/app/boardstudio/admin', function () {
     fastRoute('Screen', ScreenController::class);
     foreach (['index','sources','grants'] as $action) Route::get('/Dataset/' . $action, [\plugin\boardstudio\app\admin\controller\DatasetController::class, $action]);
-    foreach (['save','preview','execute','grant'] as $action) Route::post('/Dataset/' . $action, [\plugin\boardstudio\app\admin\controller\DatasetController::class, $action]);
+    foreach (['save','update','preview','execute','grant'] as $action) Route::post('/Dataset/' . $action, [\plugin\boardstudio\app\admin\controller\DatasetController::class, $action]);
     foreach (['check','releases'] as $action) Route::get('/Document/' . $action, [\plugin\boardstudio\app\admin\controller\DocumentController::class, $action]);
     foreach (['publish','activate'] as $action) Route::post('/Document/' . $action, [\plugin\boardstudio\app\admin\controller\DocumentController::class, $action]);
     Route::get('/Document/read', [\plugin\boardstudio\app\admin\controller\DocumentController::class, 'read']);

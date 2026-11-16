@@ -24,6 +24,7 @@ final class DocumentLogic extends BaseLogic
         $screen = $this->read($id);
         $document = json_decode((string) ($screen->getData('draft_document') ?? ''));
         return ['id' => $screen->id, 'name' => $screen->name, 'revision' => (int) $screen->revision,
+            'canManageGrants' => (new \plugin\boardstudio\app\service\ResourceAccess())->allows('screen',(int)$screen->id,(int)$screen->created_by,'manage'),
             'code' => $screen->code, 'accessMode' => $screen->access_mode, 'publishedReleaseId' => $screen->published_release_id,
             'document' => $document, 'legacy_layout' => $document ? null : $screen->draft_layout];
     }
@@ -55,8 +56,8 @@ final class DocumentLogic extends BaseLogic
     public function publishDocument(int $id,int $revision,string $mode,bool $acceptWarnings): array
     {
         return $this->transaction(function() use($id,$revision,$mode,$acceptWarnings) {
-            $this->read($id);
-            $screen=Screen::where('id',$id)->lock(true)->findOrEmpty();
+            $screen=$this->userDataScope($this->model->newQuery())->lock(true)->findOrEmpty($id);
+            if ($screen->isEmpty()) throw new ApiException('大屏不存在或无权访问');
             return (new ReleaseService())->publish($screen,$revision,$mode,$acceptWarnings);
         });
     }
@@ -68,8 +69,8 @@ final class DocumentLogic extends BaseLogic
     public function activate(int $id,int $releaseId,int $revision): array
     {
         return $this->transaction(function() use($id,$releaseId,$revision) {
-            $this->read($id);
-            $screen=Screen::where('id',$id)->lock(true)->findOrEmpty();
+            $screen=$this->userDataScope($this->model->newQuery())->lock(true)->findOrEmpty($id);
+            if ($screen->isEmpty()) throw new ApiException('大屏不存在或无权访问');
             if ((int)$screen->revision!==$revision) throw new ApiException('草稿已变化，请重新加载',409);
             $release=Db::table('boardstudio_release')->where(['id'=>$releaseId,'screen_id'=>$id])->find();
             if (!$release) throw new ApiException('发布版本不存在');

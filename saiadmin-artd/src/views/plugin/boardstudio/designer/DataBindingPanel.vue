@@ -110,6 +110,8 @@
 <script setup lang="ts">
   import { useBoardI18n } from '../i18n'
   const { bt } = useBoardI18n()
+  import { useBoardPermissions } from '../core/permissions'
+  const { can } = useBoardPermissions()
 
   import { computed, onMounted, ref, watch } from 'vue'
   import { ElMessage } from 'element-plus'
@@ -234,7 +236,12 @@
     immediate: true
   })
   onMounted(async () => {
-    datasets.value = (await api.list()).items
+    if (!can('boardstudio:dataset:index')) return
+    try {
+      datasets.value = (await api.list()).items
+    } catch (error) {
+      ElMessage.error(bt((error as Error).message))
+    }
   })
 </script>
 <style scoped>

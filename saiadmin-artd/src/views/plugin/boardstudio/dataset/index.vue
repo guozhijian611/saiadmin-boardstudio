@@ -4,7 +4,12 @@
       ><div
         ><h2>{{ bt('数据集') }}</h2
         ><p>{{ bt('保存可复用的查询定义，让多个组件使用同一批结果。') }}</p></div
-      ><ElButton type="primary" @click="create">{{ bt('新建数据集') }}</ElButton></div
+      ><ElButton
+        v-if="can('boardstudio:dataset:save') && can('boardstudio:dataset:sources')"
+        type="primary"
+        @click="create"
+        >{{ bt('新建数据集') }}</ElButton
+      ></div
     >
     <ElTable :data="items" v-loading="loading">
       <ElTableColumn prop="name" :label="bt('名称')" /><ElTableColumn
@@ -25,7 +30,15 @@
       >
       <ElTableColumn :label="bt('操作')" width="220"
         ><template #default="{ row }"
-          ><ElButton size="small" @click="edit(row as DatasetRecord)">{{ bt('编辑') }}</ElButton
+          ><ElButton
+            v-if="
+              can('boardstudio:dataset:update') &&
+              can('boardstudio:dataset:sources') &&
+              (row.permissions?.edit || row.permissions?.manage)
+            "
+            size="small"
+            @click="edit(row as DatasetRecord)"
+            >{{ bt('编辑') }}</ElButton
           ><ResourceGrants
             v-if="row.permissions?.manage"
             resource-type="dataset"
@@ -224,7 +237,12 @@
               :rows="2"
               :placeholder="bt('预览参数 JSON，如 {&quot;region&quot;:&quot;east&quot;}')"
             />
-            <ElButton :loading="previewing" @click="preview">{{ bt('执行预览') }}</ElButton>
+            <ElButton
+              v-if="can('boardstudio:dataset:preview')"
+              :loading="previewing"
+              @click="preview"
+              >{{ bt('执行预览') }}</ElButton
+            >
             <ElAlert v-if="queryError" :title="bt(queryError)" type="error" :closable="false" />
             <p v-if="result"
               >{{ bt('{p0} 行 · {p1}ms', { p0: result.total, p1: result.durationMs })
@@ -243,6 +261,7 @@
       <template #footer
         ><ElButton @click="visible = false">{{ bt('取消') }}</ElButton
         ><ElButton
+          v-if="can(form.id ? 'boardstudio:dataset:update' : 'boardstudio:dataset:save')"
           type="primary"
           :loading="saving"
           :disabled="form.definition.mode === 'legacy'"
@@ -256,6 +275,8 @@
 <script setup lang="ts">
   import { useBoardI18n } from '../i18n'
   const { bt } = useBoardI18n()
+  import { useBoardPermissions } from '../core/permissions'
+  const { can } = useBoardPermissions()
 
   import { onMounted, ref } from 'vue'
   import { ElMessage } from 'element-plus'
@@ -296,7 +317,10 @@
   async function load() {
     loading.value = true
     try {
-      const [list, connections] = await Promise.all([api.list(), api.sources()])
+      const [list, connections] = await Promise.all([
+        api.list(),
+        can('boardstudio:dataset:sources') ? api.sources() : Promise.resolve({ items: [] })
+      ])
       items.value = list.items
       sources.value = connections.items
     } finally {

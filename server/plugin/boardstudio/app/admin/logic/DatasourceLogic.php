@@ -20,13 +20,7 @@ class DatasourceLogic extends BaseLogic
 
     public function userDataScope($query): mixed
     {
-        $actor=(int)(getCurrentInfo()['id'] ?? 0);
-        if($actor<=0)throw new ApiException('请先登录');
-        if($actor===1)return $query;
-        $access=new \plugin\boardstudio\app\service\ResourceAccess();
-        $ids=[];
-        foreach(Datasource::field('id,created_by')->select() as $source) if($access->allows('datasource',(int)$source->id,(int)$source->created_by,'manage',$actor))$ids[]=$source->id;
-        return $query->whereIn('id',$ids ?: [0]);
+        return (new \plugin\boardstudio\app\service\ResourceAccess())->apply(parent::userDataScope($query), 'datasource', ['manage']);
     }
 
     public function add(array $data): mixed

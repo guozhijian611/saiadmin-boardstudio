@@ -1,0 +1,162 @@
+{
+  "dataset_execute": {
+    "zh": "执行数据集",
+    "en": "Execute saved dataset (dataset)"
+  },
+  "dataset_index": {
+    "zh": "数据集列表",
+    "en": "List (dataset)"
+  },
+  "dataset_preview": {
+    "zh": "预览数据集",
+    "en": "Preview query (dataset)"
+  },
+  "dataset_save": {
+    "zh": "新建数据集",
+    "en": "Create (dataset)"
+  },
+  "dataset_sources": {
+    "zh": "数据集可用连接及结构",
+    "en": "Available connections and schema (dataset)"
+  },
+  "dataset_update": {
+    "zh": "修改数据集",
+    "en": "Update (dataset)"
+  },
+  "datasource_changeStatus": {
+    "zh": "数据源状态",
+    "en": "Change status (data source)"
+  },
+  "datasource_destroy": {
+    "zh": "数据源删除",
+    "en": "Delete (data source)"
+  },
+  "datasource_index": {
+    "zh": "数据源列表",
+    "en": "List (data source)"
+  },
+  "datasource_read": {
+    "zh": "数据源读取",
+    "en": "Read (data source)"
+  },
+  "datasource_save": {
+    "zh": "数据源添加",
+    "en": "Create (data source)"
+  },
+  "datasource_test": {
+    "zh": "测试数据源",
+    "en": "Test connection (data source)"
+  },
+  "datasource_update": {
+    "zh": "数据源修改",
+    "en": "Update (data source)"
+  },
+  "query_template_changeStatus": {
+    "zh": "查询模板状态",
+    "en": "Change status (legacy query)"
+  },
+  "query_template_destroy": {
+    "zh": "查询模板删除",
+    "en": "Delete (legacy query)"
+  },
+  "query_template_index": {
+    "zh": "查询模板列表",
+    "en": "List (legacy query)"
+  },
+  "query_template_preview": {
+    "zh": "预览查询模板",
+    "en": "Preview query (legacy query)"
+  },
+  "query_template_read": {
+    "zh": "查询模板读取",
+    "en": "Read (legacy query)"
+  },
+  "query_template_save": {
+    "zh": "查询模板添加",
+    "en": "Create (legacy query)"
+  },
+  "query_template_update": {
+    "zh": "查询模板修改",
+    "en": "Update (legacy query)"
+  },
+  "resource_grant": {
+    "zh": "修改资源授权",
+    "en": "Change resource grants (resource)"
+  },
+  "resource_grants": {
+    "zh": "读取资源授权",
+    "en": "Read resource grants (resource)"
+  },
+  "screen_changeStatus": {
+    "zh": "大屏状态",
+    "en": "Change status (screen)"
+  },
+  "screen_changeTokenStatus": {
+    "zh": "大屏访问令牌状态",
+    "en": "Change token status (screen)"
+  },
+  "screen_copy": {
+    "zh": "复制大屏",
+    "en": "Copy screen (screen)"
+  },
+  "screen_createToken": {
+    "zh": "创建大屏访问令牌",
+    "en": "Create access token (screen)"
+  },
+  "screen_deleteToken": {
+    "zh": "删除大屏访问令牌",
+    "en": "Delete access token (screen)"
+  },
+  "screen_deleteVersion": {
+    "zh": "删除大屏版本",
+    "en": "Delete version (screen)"
+  },
+  "screen_destroy": {
+    "zh": "大屏删除",
+    "en": "Delete (screen)"
+  },
+  "screen_generateFromTable": {
+    "zh": "从数据表生成大屏",
+    "en": "Generate screen from table (screen)"
+  },
+  "screen_index": {
+    "zh": "大屏列表",
+    "en": "List (screen)"
+  },
+  "screen_publish": {
+    "zh": "发布 V2 文档",
+    "en": "Publish (screen)"
+  },
+  "screen_read": {
+    "zh": "大屏读取",
+    "en": "Read (screen)"
+  },
+  "screen_resetToken": {
+    "zh": "重置大屏访问令牌",
+    "en": "Reset access token (screen)"
+  },
+  "screen_restoreVersion": {
+    "zh": "切换发布版本",
+    "en": "Restore or activate version (screen)"
+  },
+  "screen_save": {
+    "zh": "大屏添加",
+    "en": "Create (screen)"
+  },
+  "screen_saveLayout": {
+    "zh": "保存大屏布局",
+    "en": "Save layout (screen)"
+  },
+  "screen_tokens": {
+    "zh": "大屏访问令牌列表",
+    "en": "List access tokens (screen)"
+  },
+  "screen_update": {
+    "zh": "大屏修改",
+    "en": "Update (screen)"
+  },
+  "screen_versions": {
+    "zh": "发布历史",
+    "en": "Version history (screen)"
+  }
+}

@@ -20,7 +20,7 @@
 
       <ArtTableHeader :loading="loading" @refresh="loadData">
         <template #left>
-          <ElButton v-permission="'boardstudio:query_template:save'" @click="openDialog()">
+          <ElButton v-if="can('boardstudio:query_template:save')" @click="openDialog()">
             <template #icon><ArtSvgIcon icon="ri:add-fill" /></template
             >{{ bt('新增模板') }}</ElButton
           >
@@ -39,7 +39,7 @@
         <ElTableColumn :label="bt('状态')" width="110">
           <template #default="{ row }">
             <ElSwitch
-              v-permission="'boardstudio:query_template:changeStatus'"
+              v-if="can('boardstudio:query_template:changeStatus')"
               v-model="row.status"
               :active-value="1"
               :inactive-value="2"
@@ -51,18 +51,18 @@
           <template #default="{ row }">
             <ElSpace>
               <ElButton
-                v-permission="'boardstudio:query_template:preview'"
+                v-if="can('boardstudio:query_template:preview')"
                 size="small"
                 @click="preview(row)"
                 >{{ bt('预览') }}</ElButton
               >
               <SaButton
-                v-permission="'boardstudio:query_template:update'"
+                v-if="can('boardstudio:query_template:update')"
                 type="secondary"
                 @click="openDialog(row)"
               />
               <SaButton
-                v-permission="'boardstudio:query_template:destroy'"
+                v-if="can('boardstudio:query_template:destroy')"
                 type="error"
                 @click="deleteRow(row)"
               />
@@ -614,12 +614,12 @@
       </ElForm>
       <template #footer>
         <ElButton @click="dialogVisible = false">{{ bt('取消') }}</ElButton>
-        <ElButton v-permission="'boardstudio:query_template:preview'" @click="preview(form)">{{
+        <ElButton v-if="can('boardstudio:query_template:preview')" @click="preview(form)">{{
           bt('预览')
         }}</ElButton>
         <ElButton
-          v-permission="
-            form.id ? 'boardstudio:query_template:update' : 'boardstudio:query_template:save'
+          v-if="
+            can(form.id ? 'boardstudio:query_template:update' : 'boardstudio:query_template:save')
           "
           type="primary"
           @click="submit"
@@ -635,6 +635,8 @@
 </template>
 
 <script setup lang="ts">
+  import { useBoardPermissions } from '../core/permissions'
+  const { can } = useBoardPermissions()
   import { useBoardI18n } from '../i18n'
   const { bt } = useBoardI18n()
 
@@ -1503,7 +1505,7 @@
   }
 
   onMounted(async () => {
-    await loadOptions()
+    if (can('boardstudio:datasource:index')) await loadOptions()
     loadData()
   })
 </script>

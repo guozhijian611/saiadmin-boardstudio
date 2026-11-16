@@ -1,9 +1,9 @@
 <template>
-  <ElButton size="small" @click="open">{{
+  <ElButton v-if="can('boardstudio:resource:grants')" size="small" @click="open">{{
     resourceType === 'screen' ? bt('观看授权') : bt('授权')
   }}</ElButton>
   <ElDialog v-model="visible" :title="bt(title)" width="660px" append-to-body>
-    <p>{{ hint }}</p>
+    <p>{{ bt(hint) }}</p>
     <ElTable :data="items">
       <ElTableColumn prop="subject_type" :label="bt('对象类型')" /><ElTableColumn
         prop="subject_id"
@@ -11,13 +11,16 @@
       />
       <ElTableColumn prop="action" :label="bt('权限')" /><ElTableColumn :label="bt('操作')"
         ><template #default="{ row }"
-          ><ElButton size="small" @click="save({ ...row, remove: true })">{{
-            bt('撤销')
-          }}</ElButton></template
+          ><ElButton
+            v-if="can('boardstudio:resource:grant')"
+            size="small"
+            @click="save({ ...row, remove: true })"
+            >{{ bt('撤销') }}</ElButton
+          ></template
         ></ElTableColumn
       >
     </ElTable>
-    <div class="grant-form">
+    <div v-if="can('boardstudio:resource:grant')" class="grant-form">
       <ElSelect v-model="form.subject_type" :aria-label="bt('授权对象类型')"
         ><ElOption value="user" :label="bt('用户')" /><ElOption value="role" :label="bt('角色')"
       /></ElSelect>
@@ -39,6 +42,8 @@
 <script setup lang="ts">
   import { useBoardI18n } from '../i18n'
   const { bt } = useBoardI18n()
+  import { useBoardPermissions } from '../core/permissions'
+  const { can } = useBoardPermissions()
 
   import { computed, ref } from 'vue'
   import { ElMessage } from 'element-plus'

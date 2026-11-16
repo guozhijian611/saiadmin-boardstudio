@@ -28,20 +28,20 @@
       <ElButton :disabled="!canUngroup" @click="ungroupSelected">{{ bt('取消组合') }}</ElButton>
       <ElButton @click="openPresets('screen')">{{ bt('预设模板') }}</ElButton>
       <ElButton
-        v-permission="'boardstudio:screen:saveLayout'"
+        v-if="can('boardstudio:screen:saveLayout')"
         type="primary"
         :loading="busy"
         @click="saveLayout"
         >{{ bt('保存') }}</ElButton
       >
       <ElButton
-        v-permission="'boardstudio:screen:read'"
+        v-if="can('boardstudio:screen:read')"
         :disabled="busy || !screen.code"
         @click="openDraftPreview"
         >{{ bt('预览草稿') }}</ElButton
       >
       <ElButton
-        v-permission="'boardstudio:screen:publish'"
+        v-if="can('boardstudio:screen:publish')"
         type="success"
         :disabled="busy"
         @click="publish"
@@ -52,6 +52,8 @@
 </template>
 
 <script setup lang="ts">
+  import { useBoardPermissions } from '../core/permissions'
+  const { can } = useBoardPermissions()
   import { useBoardI18n } from '../i18n'
   const { bt } = useBoardI18n()
 

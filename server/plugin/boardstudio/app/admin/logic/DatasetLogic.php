@@ -21,9 +21,12 @@ final class DatasetLogic extends BaseLogic
     protected bool $scope = true;
     public function __construct() { $this->model = new Dataset(); }
 
-    public function accessible(int $id, string $action = 'use', ?int $userId = null): Dataset
+    public function accessible(int $id, string $action = 'use', ?int $userId = null, bool $lock = false): Dataset
     {
-        $dataset = Dataset::findOrEmpty($id);
+        // Explicit userId is the trusted published-screen owner, never a request parameter.
+        $query = (new Dataset())->newQuery();
+        if ($userId === null) $query = (new ResourceAccess())->apply($this->userDataScope($query), 'dataset', [$action]);
+        $dataset = $query->lock($lock)->findOrEmpty($id);
         if ($dataset->isEmpty()) throw new ApiException('数据集不存在或无权访问',403);
         (new ResourceAccess())->assert('dataset', $id, (int)$dataset->created_by, $action, $userId);
         return $dataset;
@@ -32,7 +35,8 @@ final class DatasetLogic extends BaseLogic
     {
         $access = new ResourceAccess();
         $result = [];
-        foreach (Dataset::order('id','desc')->select() as $dataset) {
+        $query = $access->apply($this->userDataScope((new Dataset())->newQuery()), 'dataset', ['use','edit','manage']);
+        foreach ($query->order('id','desc')->select() as $dataset) {
             $permissions=[];
             foreach(['use','edit','manage'] as $action) $permissions[$action]=$access->allows('dataset',(int)$dataset->id,(int)$dataset->created_by,$action);
             if (!in_array(true,$permissions,true)) continue;
@@ -45,7 +49,9 @@ final class DatasetLogic extends BaseLogic
     }
     public function source(int $id, bool $authoring = true): Datasource
     {
-        $source = Datasource::findOrEmpty($id);
+        $query = (new Datasource())->newQuery();
+        if ($authoring) $query = (new ResourceAccess())->apply((new \plugin\boardstudio\app\service\RoleDataScope())->apply($query), 'datasource', ['use']);
+        $source = $query->findOrEmpty($id);
         if ($source->isEmpty() || (int)$source->status !== 1) throw new ApiException('数据源不存在或已停用',403);
         if ($authoring) (new ResourceAccess())->assert('datasource',$id,(int)$source->created_by,'use');
         return $source;
@@ -65,10 +71,12 @@ final class DatasetLogic extends BaseLogic
         if (($definition['mode']==='http') !== ($source->type==='http')) throw new ApiException('数据源与查询模式不匹配');
         return $this->transaction(function() use($input,$id,$definition,$source) {
             if ($id) {
-                $this->accessible($id,'edit');
-                $dataset=Dataset::where('id',$id)->lock(true)->findOrEmpty();
+                $dataset=$this->accessible($id,'edit',null,true);
                 if ((int)$dataset->revision !== (int)($input['revision'] ?? 0)) throw new ApiException('数据集已被修改，请重新加载',409);
-            } else $dataset=new Dataset();
+            } else {
+                $this->userDataScope((new Dataset())->newQuery());
+                $dataset=new Dataset();
+            }
             $revision=$id ? (int)$dataset->revision+1 : 1;
             $dataset->save(['name'=>trim($input['name']), 'datasource_id'=>$source->id,'definition'=>$definition,'revision'=>$revision,
                 'status'=>(int)($input['status'] ?? 1), 'created_by'=>$id ? $dataset->created_by : (int)getCurrentInfo()['id']]);
@@ -142,11 +150,10 @@ final class DatasetLogic extends BaseLogic
     {
         if ($type==='dataset') $record=$this->accessible($id,'manage');
         elseif ($type==='datasource') {
-            $record=$this->source($id,false);
+            $record=(new DatasourceLogic())->read($id);
             (new ResourceAccess())->assert($type,$id,(int)$record->created_by,'manage');
         } elseif ($type==='screen') {
-            $record=Screen::findOrEmpty($id);
-            if($record->isEmpty())throw new ApiException('资源不存在或无权使用');
+            $record=(new ScreenLogic())->read($id);
             (new ResourceAccess())->assert($type,$id,(int)$record->created_by,'manage');
         } else throw new ApiException('未知资源类型');
         return Db::table('boardstudio_resource_grant')->where(['resource_type'=>$type,'resource_id'=>$id])->select()->toArray();
@@ -158,6 +165,8 @@ final class DatasetLogic extends BaseLogic
         $subject=(string)($input['subject_type'] ?? ''); $subjectId=(int)($input['subject_id'] ?? 0);
         $action=(string)($input['action'] ?? '');
         if (!in_array($subject,['user','role'],true) || $subjectId<=0 || !in_array($action,$type==='screen'?['view','manage']:($type==='datasource'?['use','manage']:['use','edit','manage']),true)) throw new ApiException('授权参数不合法');
+        $subjectTable = $subject === 'user' ? 'sa_system_user' : 'sa_system_role';
+        if (empty($input['remove']) && !Db::table($subjectTable)->where('id',$subjectId)->where('status',1)->whereNull('delete_time')->count()) throw new ApiException('授权对象不存在或已停用');
         $row=['resource_type'=>$type,'resource_id'=>$id,'subject_type'=>$subject,'subject_id'=>$subjectId,'action'=>$action];
         if (!empty($input['remove'])) Db::table('boardstudio_resource_grant')->where($row)->delete();
         elseif (!Db::table('boardstudio_resource_grant')->where($row)->count()) Db::table('boardstudio_resource_grant')->insert($row);

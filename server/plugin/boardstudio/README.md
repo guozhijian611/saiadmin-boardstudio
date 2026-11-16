@@ -2,6 +2,24 @@
 
 SaiAdmin 6 独立大屏插件。使用 `boardstudio` 命名空间，不修改原 `saiboard`。V2 将文档、容器布局、组件、数据源、数据集、发布快照与访问授权分开。
 
+## 2.2.0 系统与数据权限
+
+安装/升级自动登记完整的 40 个功能权限点，复用宿主账号、角色、部门及角色菜单授权。新增数据集专用 `boardstudio:dataset:index/save/update/preview/execute/sources`，资源授权使用 `boardstudio:resource:grants/grant`。数据集新建为 POST /app/boardstudio/admin/Dataset/save，已有数据集更新为 POST /app/boardstudio/admin/Dataset/update；新建接口拒绝携带已有 ID 更新。
+
+后台记录范围读取系统 data_scope：1 全部、2 自定义部门、3 本部门、4 本部门及子部门、5 本人。插件私有适配直接读取系统已有表，不覆盖核心 BaseLogic 或角色页面；已有官方 DataScope 配置入口可以直接复用。沿用给定官方包的多角色数值最大优先级，同范围自定义角色取 ID 最小者；无有效角色/非法枚举拒绝，无部门/空自定义范围返回空。数据范围输入每次读取，不复用上个账号的 ID 或旧角色缓存。
+
+升级保留现有角色值、授权和 created_by，不自动重分配历史记录；与旧版仅本人策略有区别，角色值 1 会允许访问全部后台大屏。普通账号只能由服务端确定创建者，普通更新不可转移归属或修改 V2 草稿/发布指针。跨所有者复制会移除数据绑定，复制品重新归属当前账号且保持未发布。
+
+功能权限与记录范围同时满足；数据源和数据集还与原有资源授权取交集。数据源 use 不授予连接/凭据管理，数据集 use 不授予 SQL 定义读取或修改。大屏后台管理使用角色范围，已发布 public/login/token 继续按发布策略和观看授权判断，不因后台角色扩大而自动获得他人的登录播放权限。SQL 结果的 viewer 行级策略独立配置，后台记录隔离不能替代外部业务库的数据隔离或租户条件。
+
+新增权限仅迁移持有旧版对应 API 权限的角色：旧查询列表→数据集列表；旧查询 save→新建及修改；旧查询 preview→预览及执行；旧数据源 index→连接结构；旧查询 update→资源授权。已有权限点保留 ID 与关系；重复接入不恢复管理员后来撤销的新授权。卸载先保护所有业务数据，再仅清理本插件菜单/关系及接入，不删除系统角色、部门或共享 core:role:data。
+
+权限点中英文随原自动语言入口加载，按钮使用宿主响应式 buttons 列表。完整验收与可搬移测试命令见 [权限说明](https://github.com/guozhijian611/saiadmin-boardstudio/blob/main/docs/permissions.md)。
+
+2.2.0 安装/升级还会自动为系统角色授权树接入宿主 formatMenuTitle，避免显示语言键；与语言注册/刷新保护一样按最小片段预检、备份和保护卸载，不要求手工修改系统页面。
+
+PostgreSQL 基线的系统角色菜单批量保存存在 bigint 参数推断错误。针对已识别的 saveMenuPermission 实现，安装自动将单条 insertAll 调用替换为同一事务内逐行 VALUES 插入，不替换整份核心文件、不另建授权接口；片段与前端接入一并预检和失败回退，卸载还原原语句。已原生修复的已知实现不重复修改，未知结构明确拒绝。
+
 ## 安装与升级
 
 通过 SaiAdmin 插件管理上传 ZIP，安装并完成前端依赖安装，再重新构建管理端。ZIP 根包含 `info.ini`、`config.json`、`plugin/boardstudio`、`saiadmin-artd/src/views/plugin/boardstudio`。运行依赖为 ECharts 6、vue3-draggable-resizable；Vue 3、Element Plus、Axios 由宿主提供。
